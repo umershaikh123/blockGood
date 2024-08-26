@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+
+
 contract DonationTracker {
+
     struct Campaign {
         address creator;
         string title;
@@ -13,6 +16,8 @@ contract DonationTracker {
         bool active;
         uint256 withdrawalCount;
         address[] admins;
+        uint256 creationFee;
+        bool lastWithdrawalProofUploaded;
     }
 
     struct Withdrawal {
@@ -20,7 +25,8 @@ contract DonationTracker {
         address admin;
         string reason;
         uint256 timestamp;
-        string proofImage;
+        string proofUrl;  
+        bool proofUploaded;
     }
 
     struct Organization {
@@ -48,19 +54,27 @@ contract DonationTracker {
         uint256 campaignId;
     }
 
+    uint256 private constant INDIVIDUAL_FEE = 7300000000000000 wei; // 0.0073 ETH or 20 dollars
+    uint256 private constant ORGANIZATION_FEE = 36000000000000000 wei; // 0.036 ETH or 100 dollars
+    uint256 public campaignCount;
+    uint256 public activeCampaignCount;
+
     mapping(address => Organization) public organizations;
     mapping(address => Individual) public individuals;
     mapping(uint256 => Campaign) public campaigns;
     mapping(uint256 => mapping(uint256 => Withdrawal)) public withdrawals;
     mapping(uint256 => address[]) public campaignDonors;
     mapping(uint256 => mapping(address => uint256)) public donations;
-    uint256 public campaignCount;
 
     mapping(address => bool) public registeredAddresses;
 
     event CampaignCreated(uint256 campaignId, address indexed creator);
     event DonationReceived(uint256 campaignId, address indexed donor, uint256 amount);
     event WithdrawalMade(uint256 campaignId, address indexed admin, uint256 amount);
+    event WithdrawalMade(uint256 campaignId, address indexed admin, uint256 amount, uint256 withdrawalId);
+    event ProofUploaded(uint256 campaignId, uint256 withdrawalId, string proofUrl);
+    event CampaignEnded(uint256 campaignId, address creator, uint256 refundedFee);
+
 
     modifier onlyCreator(uint256 campaignId) {
         require(campaigns[campaignId].creator == msg.sender, "Not the creator");
@@ -84,6 +98,7 @@ contract DonationTracker {
 
     constructor() {
         campaignCount = 0;
+        activeCampaignCount = 0;
     }
 
     function registerOrganization(
@@ -148,17 +163,21 @@ contract DonationTracker {
         string memory description,
         uint256 goal,
         string memory coverImage
-    ) public {
+    ) public payable {
         require(goal > 0, "Goal must be greater than 0");
         bool isIndividual = isRegisteredAsIndividual(msg.sender);
         bool isOrganization = isRegisteredAsOrganization(msg.sender);
         require(isIndividual || isOrganization, "Must be registered as individual or organization");
         
+        uint256 requiredFee = isIndividual ? INDIVIDUAL_FEE : ORGANIZATION_FEE;
+        require(msg.value == requiredFee, "Incorrect fee amount");
+
         if (isIndividual) {
             require(individuals[msg.sender].campaignId == 0, "Individual can only create one campaign");
         }
 
         campaignCount++;
+        activeCampaignCount++;
         campaigns[campaignCount] = Campaign({
             creator: msg.sender,
             title: title,
@@ -169,7 +188,9 @@ contract DonationTracker {
             coverImage: coverImage,
             active: true,
             withdrawalCount: 0,
-            admins: new address[](0)
+            admins: new address[](0),
+            creationFee: requiredFee,
+            lastWithdrawalProofUploaded: true 
         });
 
         if (isIndividual) {
@@ -181,7 +202,8 @@ contract DonationTracker {
         emit CampaignCreated(campaignCount, msg.sender);
     }
 
-    function donate(uint256 campaignId) public payable onlyActiveCampaign(campaignId) {
+    function donate(uint256 campaignId) public payable {
+        require(campaigns[campaignId].active, "Campaign not active");
         require(msg.value > 0, "Donation must be greater than 0");
         require(!registeredAddresses[msg.sender], "Registered organizations and individuals cannot donate");
 
@@ -193,23 +215,51 @@ contract DonationTracker {
         emit DonationReceived(campaignId, msg.sender, msg.value);
     }
 
-    function withdraw(uint256 campaignId, uint256 amount, string memory reason, string memory proofImage) public onlyCreator(campaignId) {
+
+    function withdraw(uint256 campaignId, uint256 amount, string memory reason) public onlyCreator(campaignId) {
         Campaign storage campaign = campaigns[campaignId];
+        require(campaign.active, "Campaign is not active");
         require(campaign.raised - campaign.withdrawn >= amount, "Not enough funds");
+        
+        if (campaign.withdrawalCount > 0) {
+            require(campaign.lastWithdrawalProofUploaded, "Proof for previous withdrawal not uploaded");
+        }
 
         campaign.withdrawn += amount;
         campaign.withdrawalCount++;
-        withdrawals[campaignId][campaign.withdrawalCount] = Withdrawal({
+        campaign.lastWithdrawalProofUploaded = false;
+        
+        uint256 withdrawalId = campaign.withdrawalCount;
+        withdrawals[campaignId][withdrawalId] = Withdrawal({
             amount: amount,
             admin: msg.sender,
             reason: reason,
             timestamp: block.timestamp,
-            proofImage: proofImage
+            proofUrl: "",
+            proofUploaded: false
         });
 
         payable(msg.sender).transfer(amount);
 
-        emit WithdrawalMade(campaignId, msg.sender, amount);
+        emit WithdrawalMade(campaignId, msg.sender, amount, withdrawalId);
+    }
+
+    function uploadWithdrawalProof(uint256 campaignId, uint256 withdrawalId, string memory proofUrl) public onlyCreator(campaignId) {
+        Campaign storage campaign = campaigns[campaignId];
+        Withdrawal storage withdrawal = withdrawals[campaignId][withdrawalId];
+        
+        require(!withdrawal.proofUploaded, "Proof already uploaded for this withdrawal");
+        require(withdrawalId == campaign.withdrawalCount, "Can only upload proof for the latest withdrawal");
+
+        withdrawal.proofUrl = proofUrl;
+        withdrawal.proofUploaded = true;
+        campaign.lastWithdrawalProofUploaded = true;
+
+        emit ProofUploaded(campaignId, withdrawalId, proofUrl);
+    }
+
+    function getWithdrawalDetails(uint256 campaignId, uint256 withdrawalId) public view returns (Withdrawal memory) {
+        return withdrawals[campaignId][withdrawalId];
     }
 
     function getCampaignDetails(uint256 campaignId) public view returns (Campaign memory) {
@@ -227,6 +277,28 @@ contract DonationTracker {
             allWithdrawals[i-1] = withdrawals[campaignId][i];
         }
         return allWithdrawals;
+    }
+
+    function endCampaign(uint256 campaignId) public onlyCreator(campaignId) {
+        Campaign storage campaign = campaigns[campaignId];
+        require(campaign.active, "Campaign is already ended");
+
+        campaign.active = false;
+        uint256 refundAmount = campaign.creationFee;
+        campaign.creationFee = 0; 
+        
+        if (activeCampaignCount > 0) {
+            activeCampaignCount--;
+        }
+
+        
+        payable(campaign.creator).transfer(refundAmount);
+
+        emit CampaignEnded(campaignId, campaign.creator, refundAmount);
+    }
+
+    function getActiveCampaignCount() public view returns (uint256) {
+        return activeCampaignCount;
     }
 
     function getCampaignDonors(uint256 campaignId) public view returns (address[] memory) {
