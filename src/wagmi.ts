@@ -1,4 +1,4 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { getDefaultConfig } from "@rainbow-me/rainbowkit"
 import {
   arbitrum,
   base,
@@ -6,18 +6,39 @@ import {
   optimism,
   polygon,
   sepolia,
-} from 'wagmi/chains';
+  holesky,
+  rootstockTestnet,
+  rootstock,
+  morphHolesky,
+  arbitrumSepolia,
+} from "wagmi/chains"
 
 export const config = getDefaultConfig({
-  appName: 'RainbowKit App',
-  projectId: 'YOUR_PROJECT_ID',
+  appName: "RainbowKit App",
+  projectId: process.env.NEXT_PUBLIC_WALLET_ID || "",
   chains: [
-    mainnet,
+    {
+      ...rootstock,
+      iconUrl: "/Icons/rootStockIcon.png",
+    },
+    {
+      ...rootstockTestnet,
+      iconUrl: "/Icons/rootStockIcon.png",
+    },
+
+    {
+      ...morphHolesky,
+      iconUrl: "/Icons/morphIcon.png",
+    },
+
+    holesky,
+    sepolia,
+
+    arbitrumSepolia,
+
     polygon,
     optimism,
     arbitrum,
-    base,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
   ],
   ssr: true,
-});
+})
