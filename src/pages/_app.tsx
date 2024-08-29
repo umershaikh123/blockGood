@@ -17,6 +17,7 @@ import store from "../store"
 import ResponsiveAppBar from "../Components/Common/navbar"
 import Logo from "/public/Logo.svg"
 import merge from "lodash.merge"
+import CustomSidebar from "../Components/Common/SideBar"
 
 const client = new QueryClient()
 
@@ -45,7 +46,13 @@ function MyApp({ Component, pageProps }: AppProps) {
               endComponent={<ConnectButton />}
               copyright="© 2024 Nexus Network, Inc."
             />
-            <Component {...pageProps} />
+
+            {/* <SideBar /> */}
+            <CustomSidebar />
+
+            <div className="ml-20 mt-8">
+              <Component {...pageProps} />
+            </div>
           </RainbowKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
