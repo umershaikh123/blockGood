@@ -9,9 +9,9 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta charSet="utf-8" />
-        <link rel="icon" href="/cryptoFund/public/eth.png" />
+        <link rel="icon" href="/public/Logo.svg" />
 
-        <meta name="theme-color" content="#001321" />
+        <meta name="theme-color" content="#fefae0" />
         <meta name="description" content={siteDescription} />
         {/* <!-- Facebook Meta Tags --> */}
         <meta property="og:url" content={siteDomain} />

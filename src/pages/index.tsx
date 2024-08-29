@@ -4,9 +4,7 @@ import type { NextPage } from "next"
 const Home: NextPage = () => {
   return (
     <div>
-      <div className=" ">
-        <ConnectButton />
-      </div>
+      <div className=" "></div>
     </div>
   )
 }
