@@ -18,10 +18,17 @@ const Home: NextPage = () => {
       <div className="absolute  right-20 top-10">
         <Button
           variant="contained"
-          endIcon={<AddIcon sx={{ color: "var(--Bg)" }} />}
+          endIcon={
+            <AddIcon
+              sx={{
+                color: "var(--Bg)",
+              }}
+            />
+          }
           sx={{
             backgroundColor: "var(--primary)",
             textTransform: "capitalize",
+
             borderRadius: "6px",
           }}
         >

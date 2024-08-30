@@ -63,8 +63,8 @@ const CustomSidebar = () => {
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
       className={clsx(
-        "fixed top-20 left-0 h-[92vh] transition-width pt-4 pb-8 duration-300 ease-in-out rounded-lg flex flex-col justify-between ",
-        expanded ? "w-48" : "w-20"
+        "fixed top-20 left-0 h-[92vh] transition-width pt-4 pb-8 duration-300 ease-in-out rounded-lg flex flex-col justify-between  z-30",
+        expanded ? "w-52" : "w-20"
       )}
       style={{ backgroundColor: "var(--Bg)" }}
     >

@@ -15,7 +15,7 @@ export default function ColorTabs({ tabs }: ColorTabsProps) {
   const [activeTab, setActiveTab] = React.useState(tabs[0].value)
 
   return (
-    <div className="flex flex-col items-center justify-between min-w-[40ch] w-fit">
+    <div className="flex flex-col items-center justify-between    w-full max-w-[28rem]">
       <div className="flex">
         {tabs.map(tab => (
           <button

@@ -8,7 +8,6 @@ import { WagmiProvider } from "wagmi"
 import {
   ConnectButton,
   RainbowKitProvider,
-  darkTheme,
   Theme,
   lightTheme,
 } from "@rainbow-me/rainbowkit"
@@ -47,7 +46,6 @@ function MyApp({ Component, pageProps }: AppProps) {
               copyright="© 2024 Nexus Network, Inc."
             />
 
-            {/* <SideBar /> */}
             <CustomSidebar />
 
             <div className="ml-28 mt-4  ">
