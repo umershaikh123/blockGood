@@ -33,7 +33,7 @@ a {
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--primary);
+  background: var(--Bg);
   border-radius: 5px;
 }
 

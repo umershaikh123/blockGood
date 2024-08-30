@@ -50,7 +50,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             {/* <SideBar /> */}
             <CustomSidebar />
 
-            <div className="ml-28 mt-4">
+            <div className="ml-28 mt-4  ">
               <Component {...pageProps} />
             </div>
           </RainbowKitProvider>
