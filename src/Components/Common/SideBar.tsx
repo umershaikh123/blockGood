@@ -5,6 +5,7 @@ import ForumIcon from "@mui/icons-material/Forum"
 import PaidIcon from "@mui/icons-material/Paid"
 import NotificationsIcon from "@mui/icons-material/Notifications"
 import PersonIcon from "@mui/icons-material/Person"
+import CreateIcon from "@mui/icons-material/Create"
 import {
   Box,
   List,
@@ -31,6 +32,11 @@ const sidebarItemsTop = [
     text: "Chats",
     icon: <ForumIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
     link: "/chat",
+  },
+  {
+    text: "Attestation",
+    icon: <CreateIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
+    link: "/attestation",
   },
 ]
 
