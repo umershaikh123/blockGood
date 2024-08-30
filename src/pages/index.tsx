@@ -7,15 +7,33 @@ import AddIcon from "@mui/icons-material/Add"
 import Tippy from "@tippyjs/react"
 import "tippy.js/animations/scale.css"
 import "tippy.js/themes/translucent.css"
+import DonationPopup from "../Components/Common/Popup"
+import { Backdrop } from "@mui/material"
 
 const Home: NextPage = () => {
+  const [open, setOpen] = React.useState(false)
+  const handleClose = () => {
+    setOpen(false)
+  }
+  const handleOpen = () => {
+    setOpen(true)
+  }
+
   return (
     <div className="flex flex-col relative ">
       <h1 className=" text-3xl text-[var(--secondary)] font-[600]">
         Campaigns
       </h1>
+      <Backdrop
+        sx={theme => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={open}
+        onClick={handleClose}
+      >
+        <DonationPopup handleClose={handleClose} />
+      </Backdrop>
+
       <div className="mt-4">
-        <ColorTabs tabs={tabsProps} />
+        <ColorTabs tabs={tabsProps} handlePopUp={handleOpen} />
       </div>
 
       <div className="absolute  right-20 top-12 hidden min-[850px]:flex">

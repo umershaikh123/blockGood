@@ -3,13 +3,16 @@ import Image, { StaticImageData } from "next/image"
 import ProgressBar from "./ProgressBar"
 import { Button } from "@mui/material"
 import { CampaignCardPropsType, CampaignType } from "../../types/campaign"
+import Backdrop from "@mui/material/Backdrop"
 
+import DonationPopup from "./Popup"
 export const CampaignCard = ({
   bgImage,
   title,
   raisedValue,
   GoalValue,
   LeftValue,
+  handleClick,
 }: CampaignCardPropsType) => {
   return (
     <div className="group flex flex-col border-2 border-gray-200 w-fit rounded-xl h-full hover:border-[var(--primary)] transition-all duration-300">
@@ -40,6 +43,7 @@ export const CampaignCard = ({
             border: "2px solid var(--secondary)",
           },
         }}
+        onClick={handleClick}
       >
         Donate
       </Button>
@@ -78,8 +82,10 @@ export const CampaignCard = ({
 
 export const CampaignCardContainer = ({
   campaignsList,
+  handlePopUp,
 }: {
   campaignsList: CampaignType[]
+  handlePopUp: any
 }) => {
   return (
     <>
@@ -92,6 +98,7 @@ export const CampaignCardContainer = ({
             raisedValue={campaign.raisedValue}
             GoalValue={campaign.GoalValue}
             LeftValue={campaign.LeftValue}
+            handleClick={handlePopUp}
           />
         ))}
       </div>

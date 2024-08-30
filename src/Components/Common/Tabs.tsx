@@ -4,14 +4,15 @@ import * as React from "react"
 interface Tab {
   label: string
   value: string
-  component: React.ReactNode
+  component: any
 }
 
 interface ColorTabsProps {
   tabs: Tab[]
+  handlePopUp: () => void
 }
 
-export default function ColorTabs({ tabs }: ColorTabsProps) {
+export default function ColorTabs({ tabs, handlePopUp }: ColorTabsProps) {
   const [activeTab, setActiveTab] = React.useState(tabs[0].value)
 
   return (
@@ -43,7 +44,7 @@ export default function ColorTabs({ tabs }: ColorTabsProps) {
                 : "opacity-0 -translate-y-5"
             }`}
           >
-            {activeTab === tab.value && tab.component}
+            {activeTab === tab.value && tab.component(handlePopUp)}
           </div>
         ))}
       </div>
