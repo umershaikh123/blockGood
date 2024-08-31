@@ -166,6 +166,8 @@ contract DonationTracker {
     function isRegisteredAsOrganization(address addr) public view returns (bool) {
         return organizations[addr].registered;
     }
+
+    
 function createCampaign(
         string memory title,
         string memory description,

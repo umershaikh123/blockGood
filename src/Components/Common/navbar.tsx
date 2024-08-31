@@ -15,6 +15,7 @@ import Image from "next/image"
 import { ResponsiveAppBarProps } from "../../types/Navbar"
 import SearchIcon from "@mui/icons-material/Search"
 import { styled, alpha } from "@mui/material/styles"
+import SpaIcon from "@mui/icons-material/Spa"
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -56,11 +57,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }))
 
-function ResponsiveAppBar({
-  logo,
-  endComponent,
-  copyright,
-}: ResponsiveAppBarProps) {
+function ResponsiveAppBar({ endComponent, copyright }: ResponsiveAppBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null)
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -72,9 +69,9 @@ function ResponsiveAppBar({
   }
 
   return (
-    <div className={` flex justify-center h-20`}>
+    <div className={` flex justify-center h-20   `}>
       <nav
-        className=" fixed z-30  mx-auto w-full  bg-[var(--Bg)] rounded-xl  mt-2 px-0 text-white  backdrop-blur-lg sm:px-8  md:max-w-[98vw]     "
+        className=" fixed z-30  mx-auto w-full  bg-[var(--Bg)] rounded-xl   px-0 text-white  backdrop-blur-lg sm:px-8  md:max-w-[98vw]     "
         aria-labelledby="menu-button"
       >
         <Toolbar disableGutters>
@@ -83,13 +80,12 @@ function ResponsiveAppBar({
               display: { xs: "none", lg: "flex" },
             }}
           >
-            <Image
-              src={logo}
-              width={250}
-              height={250}
-              alt="web nexus logo"
-              className="sm:mr-16"
-            />
+            <div className="flex space-x-2 mr-5">
+              <SpaIcon sx={{ color: "var(--primary)", fontSize: 40 }} />
+              <h1 className=" text-[var(--primary)]    font-bold  font-mono text-4xl">
+                BlockGood
+              </h1>
+            </div>
           </Box>
 
           <Box
@@ -153,13 +149,12 @@ function ResponsiveAppBar({
               display: { xs: "flex", lg: "none", flexGrow: 1, mr: 2 },
             }}
           >
-            <Image
-              src={logo}
-              width={250}
-              height={250}
-              alt="mobile nexus logo"
-              className=" -ml-12 "
-            />
+            <div className="flex space-x-2 mr-5">
+              <SpaIcon sx={{ color: "var(--primary)", fontSize: 40 }} />
+              <h1 className=" text-[var(--primary)]    font-bold  font-mono text-4xl">
+                BlockGood
+              </h1>
+            </div>
           </Box>
 
           {/* Web Links */}

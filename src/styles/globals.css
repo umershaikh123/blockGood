@@ -58,7 +58,7 @@ input[type="number"] {
 }
 
 .tippy-box[data-theme~="custom"] {
-  background-color: #dda15e;
+  background-color: var(--secondary);
   color: white;
   padding: 4px 8px 4px 8px !important;
   border-radius: 4px;

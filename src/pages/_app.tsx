@@ -41,9 +41,8 @@ function MyApp({ Component, pageProps }: AppProps) {
             showRecentTransactions={true}
           >
             <ResponsiveAppBar
-              logo={Logo}
               endComponent={<ConnectButton />}
-              copyright="© 2024 Nexus Network, Inc."
+              copyright="© 2024 BlockGood, Inc."
             />
 
             <CustomSidebar />

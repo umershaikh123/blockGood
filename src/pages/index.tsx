@@ -118,7 +118,7 @@ const Home: NextPage = () => {
                 fill: "var(--secondary)",
               },
               [`& .${gaugeClasses.referenceArc}`]: {
-                fill: "#FFDE99",
+                fill: "var(--Bg)",
               },
             })}
           />

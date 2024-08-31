@@ -24,7 +24,7 @@ const DonationHistoryTable = ({
           style={{ borderSpacing: "0" }}
         >
           <thead>
-            <tr className="bg-[var(--Bg)] text-[var(--primary)]">
+            <tr className="bg-[var(--Bg)] text-[var(--primary)] ">
               <th className="px-6 py-4 text-left">Address</th>
               <th className="px-6 py-4 text-left">Donation</th>
               <th className="px-6 py-4 text-left">Chain</th>
@@ -33,7 +33,10 @@ const DonationHistoryTable = ({
           </thead>
           <tbody className="bg-[var(--Bg)] text-[var(--secondary)]  font-medium">
             {displayedData.map((item, index) => (
-              <tr key={index} className="border-t border-[var(--primary)]">
+              <tr
+                key={index}
+                className="border-t border-[var(--primary)] font-bold"
+              >
                 <td className="px-6 py-4">{item.address}</td>
                 <td className="px-6 py-4">{item.donation} ETH</td>
                 <td className="px-6 py-4">{item.chain}</td>

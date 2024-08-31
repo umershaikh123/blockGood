@@ -16,7 +16,7 @@ import {
 } from "@mui/material"
 import clsx from "clsx"
 import Link from "next/link"
-
+import SettingsIcon from "@mui/icons-material/Settings"
 const sidebarItemsTop = [
   {
     text: "Home",
@@ -52,6 +52,11 @@ const sidebarItemsBottom = [
     text: "Profile",
     icon: <PersonIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
     link: "/profile",
+  },
+  {
+    text: "Settings",
+    icon: <SettingsIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
+    link: "/settings",
   },
 ]
 

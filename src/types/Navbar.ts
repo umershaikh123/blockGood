@@ -6,7 +6,7 @@ export interface NavLink {
 
 export interface ResponsiveAppBarProps {
   list?: NavLink[]
-  logo: string
+
   endComponent?: React.ReactNode
   copyright: string
 }
