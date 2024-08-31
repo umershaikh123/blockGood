@@ -11,19 +11,25 @@ interface Tab {
 
 interface TabsComponentProps {
   tabs: Tab[]
-  handlePopUp: () => void
-  handleDrawer: any
+  maxWidth?: string
+  component1: any
+  component2: any
+  component3: any
 }
 
 export default function TabsComponent({
   tabs,
-  handlePopUp,
-  handleDrawer,
+  maxWidth = "max-w-[28rem]",
+  component1,
+  component2,
+  component3,
 }: TabsComponentProps) {
   const [activeTab, setActiveTab] = React.useState(tabs[0].value)
 
   return (
-    <div className="flex flex-col items-center justify-between w-full max-w-[28rem]">
+    <div
+      className={`flex flex-col items-center justify-between w-full ${maxWidth}`}
+    >
       <div className="flex">
         {tabs.map(tab => (
           <button
@@ -49,11 +55,12 @@ export default function TabsComponent({
         >
           <div hidden={activeTab !== tabs[0].value}>
             {activeTab === tabs[0].value && (
-              <CampaignCardContainer
-                campaignsList={campaignsList}
-                handlePopUp={handlePopUp}
-                handleDrawer={handleDrawer}
-              />
+              // <CampaignCardContainer
+              //   campaignsList={campaignsList}
+              //   handlePopUp={handlePopUp}
+              //   handleDrawer={handleDrawer}
+              // />
+              <>{component1}</>
             )}
           </div>
         </Fade>
@@ -64,7 +71,7 @@ export default function TabsComponent({
           timeout={600}
         >
           <div hidden={activeTab !== tabs[1].value}>
-            {activeTab === tabs[1].value && <h1>Oragnaization Campaigns</h1>}
+            {activeTab === tabs[1].value && <>{component2}</>}
           </div>
         </Fade>
 
@@ -74,7 +81,7 @@ export default function TabsComponent({
           timeout={600}
         >
           <div hidden={activeTab !== tabs[2].value}>
-            {activeTab === tabs[2].value && <h1>Individual Campaigns</h1>}
+            {activeTab === tabs[2].value && <>{component3}</>}
           </div>
         </Fade>
       </div>

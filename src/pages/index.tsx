@@ -20,7 +20,9 @@ import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge"
 import ProgressBar from "../Components/Common/ProgressBar"
 import ForumIcon from "@mui/icons-material/Forum"
 import { StatCard } from "../Components/Common/Card"
-
+import { campaignsList } from "../constants/campaigns"
+import { CampaignCardContainer } from "../Components/Common/Card"
+import Details from "../Components/Common/Details"
 const Home: NextPage = () => {
   const [open, setOpen] = React.useState(false)
   const handleClose = () => {
@@ -35,6 +37,21 @@ const Home: NextPage = () => {
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpenDrawer(newOpen)
   }
+
+  const drawerTabsProps = [
+    {
+      label: "Details",
+      value: "details",
+    },
+    {
+      label: "Donation History",
+      value: "donation History",
+    },
+    {
+      label: "Spending",
+      value: "spending",
+    },
+  ]
 
   const DrawerList = (
     <Box
@@ -165,7 +182,32 @@ const Home: NextPage = () => {
           />
         </div>
 
-        <div className="h-[30vh]"></div>
+        <div className="mt-6">
+          <TabsComponent
+            tabs={drawerTabsProps}
+            component1={
+              <>
+                <Details
+                  description="   Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+        velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+        occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+        mollit anim id est laborum"
+                  xLink="/"
+                  InstaLink="/"
+                  FaceBookLink="/"
+                />
+              </>
+            }
+            component2={<>Content for Oragnizations campaigns</>}
+            component3={<>Content for Individual campaigns</>}
+            maxWidth="max-w-[32rem]"
+          />
+        </div>
+
+        <div className="mb-[1rem]" />
       </div>
     </Box>
   )
@@ -183,15 +225,27 @@ const Home: NextPage = () => {
         <DonationPopup handleClose={handleClose} />
       </Backdrop>
 
-      <Drawer open={openDrawer} onClose={toggleDrawer(false)} anchor="right">
+      <Drawer
+        open={openDrawer}
+        onClose={toggleDrawer(false)}
+        anchor="right"
+        disableEnforceFocus
+      >
         {DrawerList}
       </Drawer>
 
       <div className="mt-4">
         <TabsComponent
           tabs={tabsProps}
-          handlePopUp={handleOpen}
-          handleDrawer={toggleDrawer(true)}
+          component1={
+            <CampaignCardContainer
+              campaignsList={campaignsList}
+              handlePopUp={handleOpen}
+              handleDrawer={toggleDrawer(true)}
+            />
+          }
+          component2={<>Content for Oragnizations campaigns</>}
+          component3={<>Content for Individual campaigns</>}
         />
       </div>
 
