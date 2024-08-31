@@ -31,14 +31,14 @@ export const config = getDefaultConfig({
       iconUrl: "/Icons/morphIcon.png",
     },
 
-    holesky,
+    // holesky,
     sepolia,
 
-    arbitrumSepolia,
+    // arbitrumSepolia,
 
-    polygon,
-    optimism,
-    arbitrum,
+    // polygon,
+    // optimism,
+    // arbitrum,
   ],
   ssr: true,
 })

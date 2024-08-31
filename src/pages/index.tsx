@@ -7,7 +7,7 @@ import AddIcon from "@mui/icons-material/Add"
 import Tippy from "@tippyjs/react"
 import "tippy.js/animations/scale.css"
 import "tippy.js/themes/translucent.css"
-import DonationPopup from "../Components/Common/Popup"
+import DonationPopup, { CampaignPopup } from "../Components/Common/Popup"
 import { Backdrop } from "@mui/material"
 import Image from "next/image"
 import c3 from "/public/Images/campaign/c3.svg"
@@ -26,12 +26,20 @@ import Details from "../Components/Common/Details"
 import DonationHistoryTable from "../Components/Common/Table"
 import { donationTableData } from "../constants/tableData"
 const Home: NextPage = () => {
-  const [open, setOpen] = React.useState(false)
-  const handleClose = () => {
-    setOpen(false)
+  const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
+  const handleDonationClose = () => {
+    setDonationPopUpOpen(false)
   }
-  const handleOpen = () => {
-    setOpen(true)
+  const handleDonationOpen = () => {
+    setDonationPopUpOpen(true)
+  }
+
+  const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
+  const handleCampaignClose = () => {
+    setCampaignPopUpOpen(false)
+  }
+  const handleCampaignOpen = () => {
+    setCampaignPopUpOpen(true)
   }
 
   const [openDrawer, setOpenDrawer] = React.useState(false)
@@ -135,7 +143,7 @@ const Home: NextPage = () => {
               },
             }}
             onClick={event => {
-              handleOpen()
+              handleDonationOpen()
             }}
           >
             Donate
@@ -220,15 +228,23 @@ const Home: NextPage = () => {
 
   return (
     <div className="flex flex-col relative ">
-      <h1 className=" text-3xl text-[var(--secondary)]   font-extrabold">
+      <h1 className=" text-3xl text-[var(--secondary)]   font-bold">
         Campaigns
       </h1>
       <Backdrop
         sx={theme => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
-        open={open}
-        onClick={handleClose}
+        open={donationPopUpOpen}
+        onClick={handleDonationClose}
       >
-        <DonationPopup handleClose={handleClose} />
+        <DonationPopup handleClose={handleDonationClose} />
+      </Backdrop>
+
+      <Backdrop
+        sx={theme => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={campaignPopUpOpen}
+        onClick={handleCampaignClose}
+      >
+        <CampaignPopup handleClose={handleCampaignClose} />
       </Backdrop>
 
       <Drawer
@@ -246,7 +262,7 @@ const Home: NextPage = () => {
           component1={
             <CampaignCardContainer
               campaignsList={campaignsList}
-              handlePopUp={handleOpen}
+              handlePopUp={handleDonationOpen}
               handleDrawer={toggleDrawer(true)}
             />
           }
@@ -265,6 +281,7 @@ const Home: NextPage = () => {
         >
           <Button
             variant="contained"
+            onClick={handleCampaignOpen}
             endIcon={
               <AddIcon
                 sx={{
