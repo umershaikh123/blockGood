@@ -109,6 +109,7 @@ contract DonationTracker {
         activeCampaignCount = 0;
     }
 
+
     function registerOrganization(
         string memory name,
         string memory taxId,
@@ -165,7 +166,7 @@ contract DonationTracker {
     function isRegisteredAsOrganization(address addr) public view returns (bool) {
         return organizations[addr].registered;
     }
-    function createCampaign(
+function createCampaign(
         string memory title,
         string memory description,
         uint256 goal,

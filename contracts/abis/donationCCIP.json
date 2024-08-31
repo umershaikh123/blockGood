@@ -1,0 +1,263 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_router",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_link",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "router",
+				"type": "address"
+			}
+		],
+		"name": "InvalidRouter",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "donor",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "sourceChainSelector",
+				"type": "uint64"
+			}
+		],
+		"name": "CrossChainDonationReceived",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "donor",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "destinationChainSelector",
+				"type": "uint64"
+			}
+		],
+		"name": "CrossChainDonationSent",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint64",
+				"name": "chainSelector",
+				"type": "uint64"
+			}
+		],
+		"name": "blacklistChain",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "bytes32",
+						"name": "messageId",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "uint64",
+						"name": "sourceChainSelector",
+						"type": "uint64"
+					},
+					{
+						"internalType": "bytes",
+						"name": "sender",
+						"type": "bytes"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					},
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "token",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "amount",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct Client.EVMTokenAmount[]",
+						"name": "destTokenAmounts",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct Client.Any2EVMMessage",
+				"name": "message",
+				"type": "tuple"
+			}
+		],
+		"name": "ccipReceive",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getRouter",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "campaignId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "donor",
+				"type": "address"
+			},
+			{
+				"internalType": "uint64",
+				"name": "destinationChainSelector",
+				"type": "uint64"
+			}
+		],
+		"name": "sendCrosschainDonation",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes4",
+				"name": "interfaceId",
+				"type": "bytes4"
+			}
+		],
+		"name": "supportsInterface",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint64",
+				"name": "chainSelector",
+				"type": "uint64"
+			}
+		],
+		"name": "whitelistChain",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint64",
+				"name": "",
+				"type": "uint64"
+			}
+		],
+		"name": "whitelistedChains",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdrawLink",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
