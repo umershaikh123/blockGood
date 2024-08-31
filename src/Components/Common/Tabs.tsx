@@ -1,22 +1,27 @@
 "use client"
 import * as React from "react"
+import { CampaignCardContainer } from "../../Components/Common/Card"
+import { campaignsList } from "../../constants/campaigns"
+import { Fade, Zoom, Slide } from "@mui/material"
 
 interface Tab {
   label: string
   value: string
-  component: any
 }
 
-interface ColorTabsProps {
+interface TabsComponentProps {
   tabs: Tab[]
   handlePopUp: () => void
 }
 
-export default function ColorTabs({ tabs, handlePopUp }: ColorTabsProps) {
+export default function TabsComponent({
+  tabs,
+  handlePopUp,
+}: TabsComponentProps) {
   const [activeTab, setActiveTab] = React.useState(tabs[0].value)
 
   return (
-    <div className="flex flex-col items-center justify-between    w-full max-w-[28rem]">
+    <div className="flex flex-col items-center justify-between w-full max-w-[28rem]">
       <div className="flex">
         {tabs.map(tab => (
           <button
@@ -35,18 +40,40 @@ export default function ColorTabs({ tabs, handlePopUp }: ColorTabsProps) {
       </div>
 
       <div className="w-full p-4 mt-4">
-        {tabs.map(tab => (
-          <div
-            key={tab.value}
-            className={`transition-opacity transform duration-500 ${
-              activeTab === tab.value
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 -translate-y-5"
-            }`}
-          >
-            {activeTab === tab.value && tab.component(handlePopUp)}
+        <Fade
+          key={tabs[0].value}
+          in={activeTab === tabs[0].value}
+          timeout={600}
+        >
+          <div hidden={activeTab !== tabs[0].value}>
+            {activeTab === tabs[0].value && (
+              <CampaignCardContainer
+                campaignsList={campaignsList}
+                handlePopUp={handlePopUp}
+              />
+            )}
           </div>
-        ))}
+        </Fade>
+
+        <Fade
+          key={tabs[1].value}
+          in={activeTab === tabs[1].value}
+          timeout={600}
+        >
+          <div hidden={activeTab !== tabs[1].value}>
+            {activeTab === tabs[1].value && <h1>Oragnaization Campaigns</h1>}
+          </div>
+        </Fade>
+
+        <Fade
+          key={tabs[2].value}
+          in={activeTab === tabs[2].value}
+          timeout={600}
+        >
+          <div hidden={activeTab !== tabs[2].value}>
+            {activeTab === tabs[2].value && <h1>Individual Campaigns</h1>}
+          </div>
+        </Fade>
       </div>
     </div>
   )

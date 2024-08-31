@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import type { NextPage } from "next"
-import ColorTabs from "../Components/Common/Tabs"
+import TabsComponent from "../Components/Common/Tabs"
 import { tabsProps } from "../constants/tabs"
 import Button from "@mui/material/Button"
 import AddIcon from "@mui/icons-material/Add"
@@ -33,7 +33,7 @@ const Home: NextPage = () => {
       </Backdrop>
 
       <div className="mt-4">
-        <ColorTabs tabs={tabsProps} handlePopUp={handleOpen} />
+        <TabsComponent tabs={tabsProps} handlePopUp={handleOpen} />
       </div>
 
       <div className="absolute  right-20 top-12 hidden min-[850px]:flex">
