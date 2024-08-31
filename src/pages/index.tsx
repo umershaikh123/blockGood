@@ -149,9 +149,8 @@ const Home: NextPage = () => {
                 },
               },
             }}
-            onClick={event => {
-              event.stopPropagation
-              handleOpen()
+            onClick={() => {
+              console.log("chat button clicked")
             }}
           >
             Chat
