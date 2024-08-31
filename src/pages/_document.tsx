@@ -1,7 +1,7 @@
 import { Html, Head, Main, NextScript } from "next/document"
 
 export const siteTitle = "CryptoFund"
-const siteDomain = ""
+const siteDomain = "https://crypto-fund-six.vercel.app/"
 const siteDescription = "A crowdFunding transparent platform"
 
 export default function Document() {
@@ -9,7 +9,7 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <meta charSet="utf-8" />
-        <link rel="icon" href="/public/Logo.svg" />
+        <link rel="icon" href="./favicon.png" />
 
         <meta name="theme-color" content="#fefae0" />
         <meta name="description" content={siteDescription} />
