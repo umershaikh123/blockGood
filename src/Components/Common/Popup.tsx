@@ -109,22 +109,22 @@ export function RowRadioButtonsGroup() {
                 sx={{
                   color: "var(--secondary)",
                   "&.Mui-checked": {
-                    color: "var(--secondary)",
+                    color: "var(--primary)",
                   },
                 }}
               />
             }
             label="Organization"
-            sx={{ color: "var(--secondary)" }}
+            sx={{ color: "var(--primary)" }}
           />
           <FormControlLabel
             value="individual"
             control={
               <Radio
                 sx={{
-                  color: "var(--secondary)",
+                  color: "var(--primary)",
                   "&.Mui-checked": {
-                    color: "var(--secondary)",
+                    color: "var(--primary)",
                   },
                 }}
               />
