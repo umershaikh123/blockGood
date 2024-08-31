@@ -54,14 +54,7 @@ export default function TabsComponent({
           timeout={600}
         >
           <div hidden={activeTab !== tabs[0].value}>
-            {activeTab === tabs[0].value && (
-              // <CampaignCardContainer
-              //   campaignsList={campaignsList}
-              //   handlePopUp={handlePopUp}
-              //   handleDrawer={handleDrawer}
-              // />
-              <>{component1}</>
-            )}
+            {activeTab === tabs[0].value && <>{component1}</>}
           </div>
         </Fade>
 

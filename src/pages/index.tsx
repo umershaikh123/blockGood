@@ -23,6 +23,8 @@ import { StatCard } from "../Components/Common/Card"
 import { campaignsList } from "../constants/campaigns"
 import { CampaignCardContainer } from "../Components/Common/Card"
 import Details from "../Components/Common/Details"
+import DonationHistoryTable from "../Components/Common/Table"
+import { donationTableData } from "../constants/tableData"
 const Home: NextPage = () => {
   const [open, setOpen] = React.useState(false)
   const handleClose = () => {
@@ -55,7 +57,7 @@ const Home: NextPage = () => {
 
   const DrawerList = (
     <Box
-      sx={{ width: "40vw", borderRadius: "5rem", padding: "1rem" }}
+      sx={{ width: "48rem", borderRadius: "5rem", padding: "1rem" }}
       role="presentation"
     >
       <div className="flex flex-col w-full text-[var(--primary)]">
@@ -182,7 +184,7 @@ const Home: NextPage = () => {
           />
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 min-h-[40vh]">
           <TabsComponent
             tabs={drawerTabsProps}
             component1={
@@ -201,8 +203,12 @@ const Home: NextPage = () => {
                 />
               </>
             }
-            component2={<>Content for Oragnizations campaigns</>}
-            component3={<>Content for Individual campaigns</>}
+            component2={
+              <>
+                <DonationHistoryTable tableData={donationTableData} />
+              </>
+            }
+            component3={<div className="min-h-[30vh]"></div>}
             maxWidth="max-w-[32rem]"
           />
         </div>
