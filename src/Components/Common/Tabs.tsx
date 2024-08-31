@@ -12,11 +12,13 @@ interface Tab {
 interface TabsComponentProps {
   tabs: Tab[]
   handlePopUp: () => void
+  handleDrawer: any
 }
 
 export default function TabsComponent({
   tabs,
   handlePopUp,
+  handleDrawer,
 }: TabsComponentProps) {
   const [activeTab, setActiveTab] = React.useState(tabs[0].value)
 
@@ -50,6 +52,7 @@ export default function TabsComponent({
               <CampaignCardContainer
                 campaignsList={campaignsList}
                 handlePopUp={handlePopUp}
+                handleDrawer={handleDrawer}
               />
             )}
           </div>

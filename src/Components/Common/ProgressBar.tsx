@@ -90,7 +90,7 @@ function GradientCircularProgress() {
 
 export default function ProgressBar({ progress }: { progress: number }) {
   return (
-    <Stack spacing={2} sx={{ flexGrow: 1, marginX: "8px" }}>
+    <Stack spacing={2} sx={{ flexGrow: 1 }}>
       <BorderLinearProgress variant="determinate" value={progress} />
     </Stack>
   )

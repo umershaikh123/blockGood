@@ -6,7 +6,8 @@ export interface CampaignCardPropsType {
   raisedValue: string
   GoalValue: string
   LeftValue: string
-  handleClick?: any
+  handleClick: any
+  handleDrawer: any
 }
 
 export interface CampaignType {
