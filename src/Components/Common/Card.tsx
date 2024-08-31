@@ -16,7 +16,7 @@ export const StatCard = ({
   LeftValue,
 }: StatCardPropsType) => {
   return (
-    <div className=" bg-[var(--Bg)] w-full h-full flex justify-evenly   rounded-b-xl group-hover:border-[var(--primary)] transition-all duration-300  ">
+    <div className=" bg-[var(--Bg)] w-full h-full flex justify-evenly border-t-2 rounded-b-xl group-hover:border-[var(--primary)] transition-all duration-300  ">
       <div className="flex flex-col items-center justify-center  mx-6  space-y-2  ">
         <h1 className="  text-sm  font-semibold text-[var(--secondary)]">
           Raised

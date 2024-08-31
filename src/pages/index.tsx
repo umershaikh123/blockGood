@@ -157,7 +157,7 @@ const Home: NextPage = () => {
           </Button>
         </div>
 
-        <div className="max-w-7/12  border  border-gray-300 rounded-xl  ">
+        <div className="max-w-7/12  border-r border-l border-b  border-gray-300 rounded-xl  ">
           <StatCard
             raisedValue={"$25,000"}
             GoalValue={"$50,000"}
