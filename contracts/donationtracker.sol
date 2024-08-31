@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-
+interface IDonationChainLink {
+    function sendCrosschainDonation(uint256 campaignId, address donor, uint64 destinationChainSelector) external payable;
+    function whitelistChain(uint64 chainSelector) external;
+    function blacklistChain(uint64 chainSelector) external;
+}
 
 contract DonationTracker {
 
@@ -18,6 +22,7 @@ contract DonationTracker {
         address[] admins;
         uint256 creationFee;
         bool lastWithdrawalProofUploaded;
+        uint64 destinationChainSelector;
     }
 
     struct Withdrawal {
@@ -53,6 +58,8 @@ contract DonationTracker {
         string phoneNumber;
         uint256 campaignId;
     }
+
+    IDonationChainLink public donationChainLink;
 
     uint256 private constant INDIVIDUAL_FEE = 7300000000000000 wei; // 0.0073 ETH or 20 dollars
     uint256 private constant ORGANIZATION_FEE = 36000000000000000 wei; // 0.036 ETH or 100 dollars
@@ -96,7 +103,8 @@ contract DonationTracker {
         _;
     }
 
-    constructor() {
+    constructor(address _donationChainLinkAddress) {
+        donationChainLink = IDonationChainLink(_donationChainLinkAddress);
         campaignCount = 0;
         activeCampaignCount = 0;
     }
@@ -157,12 +165,12 @@ contract DonationTracker {
     function isRegisteredAsOrganization(address addr) public view returns (bool) {
         return organizations[addr].registered;
     }
-
     function createCampaign(
         string memory title,
         string memory description,
         uint256 goal,
-        string memory coverImage
+        string memory coverImage,
+        uint64 destinationChainSelector
     ) public payable {
         require(goal > 0, "Goal must be greater than 0");
         bool isIndividual = isRegisteredAsIndividual(msg.sender);
@@ -190,9 +198,9 @@ contract DonationTracker {
             withdrawalCount: 0,
             admins: new address[](0),
             creationFee: requiredFee,
-            lastWithdrawalProofUploaded: true 
+            lastWithdrawalProofUploaded: true,
+            destinationChainSelector: destinationChainSelector
         });
-
         if (isIndividual) {
             individuals[msg.sender].campaignId = campaignCount;
         } else {
@@ -208,13 +216,16 @@ contract DonationTracker {
         require(!registeredAddresses[msg.sender], "Registered organizations and individuals cannot donate");
 
         Campaign storage campaign = campaigns[campaignId];
-        campaign.raised += msg.value;
-        donations[campaignId][msg.sender] += msg.value;
-        campaignDonors[campaignId].push(msg.sender);
-
-        emit DonationReceived(campaignId, msg.sender, msg.value);
+        
+        if (campaign.destinationChainSelector == block.chainid) {
+            campaign.raised += msg.value;
+            donations[campaignId][msg.sender] += msg.value;
+            campaignDonors[campaignId].push(msg.sender);
+            emit DonationReceived(campaignId, msg.sender, msg.value);
+        } else {
+            donationChainLink.sendCrosschainDonation{value: msg.value}(campaignId, msg.sender, campaign.destinationChainSelector);
+        }
     }
-
 
     function withdraw(uint256 campaignId, uint256 amount, string memory reason) public onlyCreator(campaignId) {
         Campaign storage campaign = campaigns[campaignId];
@@ -285,15 +296,16 @@ contract DonationTracker {
 
         campaign.active = false;
         uint256 refundAmount = campaign.creationFee;
-        campaign.creationFee = 0; 
-        
+        campaign.creationFee = 0;
+
         if (activeCampaignCount > 0) {
             activeCampaignCount--;
         }
 
-        
         payable(campaign.creator).transfer(refundAmount);
 
+        bytes[] memory recipients = new bytes[](1);
+        recipients[0] = abi.encode(campaign.creator);
         emit CampaignEnded(campaignId, campaign.creator, refundAmount);
     }
 
@@ -315,5 +327,13 @@ contract DonationTracker {
 
     function getIndividualCampaign(address individualAddress) public view returns (uint256) {
         return individuals[individualAddress].campaignId;
+    }
+
+    function whitelistChain(uint64 chainSelector) external {
+        donationChainLink.whitelistChain(chainSelector);
+    }
+
+    function blacklistChain(uint64 chainSelector) external {
+        donationChainLink.blacklistChain(chainSelector);
     }
 }
