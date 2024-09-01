@@ -7,9 +7,9 @@ import {
 } from "../Components/Common/Popup"
 import { ethers, BigNumber } from "ethers"
 
-import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
-
-import donationTrackerAbi from "../contracts/abis/donationTracker.json"
+import Tippy from "@tippyjs/react"
+import "tippy.js/animations/scale.css"
+import "tippy.js/themes/translucent.css"
 
 const campaign = () => {
   const [individualPopUpOpen, setIndividualPopUpOpen] = React.useState(false)
@@ -54,51 +54,67 @@ const campaign = () => {
         </h1>
 
         <div className=" space-x-6">
-          <Button
-            variant="outlined"
-            sx={{
-              color: "var(--primary)",
-              bgcolor: "white",
-              border: "2px solid var(--primary)",
-              width: "full",
-              px: "2rem",
-              fontWeight: 600,
-              borderRadius: "7px",
-              ":hover": {
-                bgcolor: "var(--secondary)",
-                color: "white",
-                border: "2px solid var(--secondary)",
-              },
-            }}
-            onClick={event => {
-              handleIndividualOpen()
-            }}
+          <Tippy
+            placement="bottom"
+            animateFill={true}
+            animation={"scale"}
+            theme="custom2"
+            content={`Register as Individual`}
           >
-            Individual
-          </Button>
+            <Button
+              variant="outlined"
+              sx={{
+                color: "var(--primary)",
+                bgcolor: "white",
+                border: "2px solid var(--primary)",
+                width: "full",
+                px: "2rem",
+                fontWeight: 600,
+                borderRadius: "7px",
+                ":hover": {
+                  bgcolor: "var(--secondary)",
+                  color: "white",
+                  border: "2px solid var(--secondary)",
+                },
+              }}
+              onClick={event => {
+                handleIndividualOpen()
+              }}
+            >
+              Individual
+            </Button>
+          </Tippy>
 
-          <Button
-            variant="outlined"
-            sx={{
-              color: "var(--Bg)",
-              bgcolor: "var(--primary)",
-              border: "2px solid var(--primary)",
-              width: "full",
-              px: "2rem",
-              fontWeight: 600,
-              borderRadius: "7px",
-              ":hover": {
-                bgcolor: "var(--secondary)",
-                color: "white",
-                border: "2px solid var(--secondary)",
-              },
-            }}
-            onClick={event => {
-              handleOrganizationOpen()
-            }}
+          <Tippy
+            placement="bottom"
+            animateFill={true}
+            animation={"scale"}
+            theme="custom2"
+            content={`Register as Organization`}
           >
-            Organization
-          </Button>
+            <Button
+              variant="outlined"
+              sx={{
+                color: "var(--Bg)",
+                bgcolor: "var(--primary)",
+                border: "2px solid var(--primary)",
+                width: "full",
+                px: "2rem",
+                fontWeight: 600,
+                borderRadius: "7px",
+                ":hover": {
+                  bgcolor: "var(--secondary)",
+                  color: "white",
+                  border: "2px solid var(--secondary)",
+                },
+              }}
+              onClick={event => {
+                handleOrganizationOpen()
+              }}
+            >
+              Organization
+            </Button>
+          </Tippy>
         </div>
       </div>
     </div>

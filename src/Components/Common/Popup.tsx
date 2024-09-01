@@ -1021,7 +1021,7 @@ export function RowRadioButtonsGroup() {
 export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
   return (
     <div onClick={event => event.stopPropagation()}>
-      <div className="flex flex-col w-[50rem] max-h-[90vh] py-2 bg-[var(--Bg)] rounded-xl   items-center relative overflow-y-auto ">
+      <div className="flex flex-col w-[50rem] max-h-[92vh] py-2 bg-[var(--Bg)] rounded-xl   items-center relative overflow-y-auto ">
         <div className=" absolute top-2 right-5" onClick={handleClose}>
           <Close
             sx={{
@@ -1110,7 +1110,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           variant="outlined"
           fullWidth
         />
-        <RowRadioButtonsGroup />
+
         <TextField
           type="text"
           label="Category"

@@ -58,10 +58,19 @@ input[type="number"] {
 }
 
 .tippy-box[data-theme~="custom"] {
-  background-color: var(--secondary);
-  color: white;
+  background-color: var(--Bg);
+  color: var(--primary);
   padding: 4px 8px 4px 8px !important;
-  border-radius: 4px;
+  border-radius: 7px;
+  border: 2px solid var(--primary);
+}
+
+.tippy-box[data-theme~="custom2"] {
+  background-color: var(--Bg);
+  color: var(--primary);
+  padding: 4px 8px 4px 8px !important;
+  border-radius: 7px;
+  border: 2px solid var(--primary);
 }
 
 .custom-toast .Toastify__spinner {
