@@ -99,9 +99,34 @@ export const RegisterIndividualPopup = ({
 }: {
   handleClose: () => void
 }) => {
+  const [formValues, setFormValues] = React.useState({
+    name: "",
+    age: "",
+    physicalAddress: "",
+    phoneNumber: "",
+    email: "",
+  })
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = event.target
+    setFormValues(prevValues => ({
+      ...prevValues,
+      [name]: files ? files[0] : value,
+    }))
+  }
+
   const handleIndividualRegister = async () => {
+    const {
+      name,
+
+      physicalAddress,
+      phoneNumber,
+      email,
+    } = formValues
+
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
+
     const contractAddress = "0xE8e1D0EC12BDc3eaA3510d898640e13ca48cbb2F" //sepolia
     const donationContract = new ethers.Contract(
       contractAddress,
@@ -109,39 +134,254 @@ export const RegisterIndividualPopup = ({
       provider
     )
 
-    const ContractSigner = donationContract.connect(signer)
-    //   const tx = await ContractSigner.registerIndividual(
-    //     fullName,
-    //     age,
-    //     addressDetail,
-    //     medicalCondition,
-    //     requiredTreatment,
-    //     timeline,
+    // const ContractSigner = donationContract.connect(signer)
+    // const pendingToastId = toast.loading("Transaction Pending...", {
+    //   icon: "⏳" as unknown as ToastIcon,
+    // })
+
+    // try {
+    //   const tx = await ContractSigner.registerOrganization(
+    //     name,
+    //     taxId,
+    //     physicalAddress,
+    //     phoneNumber,
     //     email,
-    //     phoneNumber
-    //      )
+    //     website,
+    //     socialMedia,
+    //     registrationProof
+    //   )
+
+    //   const receipt = await tx.wait()
+    //   toast.update(pendingToastId, {
+    //     render: <div>Transaction Successful! </div>,
+    //     type: "success",
+    //     icon: "✅" as unknown as ToastIcon,
+    //     autoClose: 5000,
+    //     isLoading: false,
+    //   })
+    // } catch (error: any) {
+    //   toast.update(pendingToastId, {
+    //     render: `Transaction Failed`,
+    //     type: "error",
+    //     icon: "❌" as unknown as ToastIcon,
+    //     autoClose: 5000,
+    //     isLoading: false,
+    //   })
     // }
   }
 
   return (
     <div onClick={event => event.stopPropagation()}>
-      <div className="flex flex-col w-[40rem] h-[80vh] bg-[var(--Bg)] rounded-xl   items-center relative overflow-auto">
-        <div className=" absolute top-2 right-5" onClick={handleClose}>
+      <div className="flex flex-col w-[40rem] h-full py-8 max-h-[90vh] bg-[var(--Bg)] rounded-xl   items-center relative overflow-auto">
+        <div className="absolute top-2 right-5" onClick={handleClose}>
           <Close
             sx={{
               color: "var(--primary)",
               fontSize: 40,
               ":hover": {
                 transition: "transform 0.3s ease-in-out",
-
                 transform: "rotate(90deg)",
               },
             }}
           />
         </div>
-        <h1 className=" text-4xl text-[var(--primary)] font-semibold my-4">
+        <h1 className="text-4xl text-[var(--primary)] font-semibold my-4">
           Register Individual
         </h1>
+
+        {/** Render TextField components for each form input, with the appropriate name and value */}
+        <TextField
+          name="name"
+          type="text"
+          label="Name"
+          placeholder="Enter your Name ..."
+          value={formValues.name}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="physicalAddress"
+          type="text"
+          label="Physical Address"
+          placeholder="Enter physical address ..."
+          value={formValues.physicalAddress}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="phoneNumber"
+          type="text"
+          label="Phone Number"
+          placeholder="Enter your phone number ..."
+          value={formValues.phoneNumber}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="email"
+          type="email"
+          label="Email"
+          placeholder="Enter your email..."
+          value={formValues.email}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="registrationProof"
+          type="file"
+          label="Proof of Identity"
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+        />
 
         <Button
           variant="contained"
