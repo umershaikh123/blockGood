@@ -14,10 +14,10 @@ import {
 import { config } from "../wagmi"
 import store from "../store"
 import ResponsiveAppBar from "../Components/Common/navbar"
-import Logo from "/public/Logo.svg"
 import merge from "lodash.merge"
 import CustomSidebar from "../Components/Common/SideBar"
-
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 const client = new QueryClient()
 
 export const myTheme = merge(lightTheme(), {
@@ -40,6 +40,23 @@ function MyApp({ Component, pageProps }: AppProps) {
             modalSize="compact"
             showRecentTransactions={true}
           >
+            <ToastContainer
+              theme="light"
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              toastStyle={{
+                backgroundColor: "var(--Bg)",
+                color: "var(--primary)",
+              }}
+              toastClassName="custom-toast"
+            />
             <ResponsiveAppBar
               endComponent={<ConnectButton />}
               copyright="© 2024 BlockGood, Inc."

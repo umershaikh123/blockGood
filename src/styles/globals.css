@@ -63,3 +63,8 @@ input[type="number"] {
   padding: 4px 8px 4px 8px !important;
   border-radius: 4px;
 }
+
+.custom-toast .Toastify__spinner {
+  border-color: var(--secondary) !important;
+  border-top-color: transparent !important;
+}
