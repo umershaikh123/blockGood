@@ -12,6 +12,13 @@ export interface CampaignCardPropsType {
 
 export interface CampaignType {
   campaignID: string
+  creator: string
+  withdrawn: string
+  active: boolean
+  withdrawalCount: number
+  creationFee: number
+  lastWithdrawalProofUploaded: boolean
+  destinationChainSelector: number
   bgImage: StaticImageData
   title: string
   raisedValue: string

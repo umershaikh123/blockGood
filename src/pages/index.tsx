@@ -237,6 +237,8 @@ const Home: NextPage = () => {
     null
   )
 
+  console.log("selectedCampaign", selectedCampaign)
+
   const handleDonationClose = () => {
     setDonationPopUpOpen(false)
   }
