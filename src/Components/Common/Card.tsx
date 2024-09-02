@@ -129,7 +129,7 @@ export const CampaignCardContainer = ({
             GoalValue={campaign.GoalValue}
             LeftValue={campaign.LeftValue}
             handleClick={handlePopUp}
-            handleDrawer={handleDrawer}
+            handleDrawer={() => handleDrawer(campaign)}
           />
         ))}
       </div>

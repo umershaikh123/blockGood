@@ -9,11 +9,11 @@ import "tippy.js/animations/scale.css"
 import "tippy.js/themes/translucent.css"
 import DonationPopup, { CampaignPopup } from "../Components/Common/Popup"
 import { Backdrop } from "@mui/material"
-import Image from "next/image"
+import Image, { StaticImageData } from "next/image"
 import c3 from "/public/Images/campaign/c3.svg"
 import Box from "@mui/material/Box"
 import Drawer from "@mui/material/Drawer"
-import { Close } from "@mui/icons-material"
+import { Close, Description } from "@mui/icons-material"
 // import StandardImageList from "../Components/Common/ImagesRow"
 import ImageRowComponent from "../Components/Common/ImagesRow"
 import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge"
@@ -25,45 +25,53 @@ import { CampaignCardContainer } from "../Components/Common/Card"
 import Details from "../Components/Common/Details"
 import DonationHistoryTable from "../Components/Common/Table"
 import { donationTableData } from "../constants/tableData"
-const Home: NextPage = () => {
-  const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
-  const handleDonationClose = () => {
-    setDonationPopUpOpen(false)
-  }
-  const handleDonationOpen = () => {
-    setDonationPopUpOpen(true)
-  }
+// import { donationTableData } from "../constants/tableData"
+import { CampaignType } from "../types/campaign"
+const drawerTabsProps = [
+  {
+    label: "Details",
+    value: "details",
+  },
+  {
+    label: "Donation History",
+    value: "donation History",
+  },
+  {
+    label: "Spending",
+    value: "spending",
+  },
+]
 
-  const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
-  const handleCampaignClose = () => {
-    setCampaignPopUpOpen(false)
-  }
-  const handleCampaignOpen = () => {
-    setCampaignPopUpOpen(true)
-  }
+interface DrawerContentProps {
+  handleDrawerClose: any
+  handleDonationOpen: () => void
+  title: string
+  progress: number
+  raisedValue: string
+  GoalValue: string
+  LeftValue: string
+  Description: string
+  donationTableData: any
+  socialLink: string
+  BgImage: StaticImageData
+  campaignID: string
+}
 
-  const [openDrawer, setOpenDrawer] = React.useState(false)
-
-  const toggleDrawer = (newOpen: boolean) => () => {
-    setOpenDrawer(newOpen)
-  }
-
-  const drawerTabsProps = [
-    {
-      label: "Details",
-      value: "details",
-    },
-    {
-      label: "Donation History",
-      value: "donation History",
-    },
-    {
-      label: "Spending",
-      value: "spending",
-    },
-  ]
-
-  const DrawerList = (
+function DrawerContent({
+  handleDrawerClose,
+  handleDonationOpen,
+  title,
+  progress,
+  raisedValue,
+  GoalValue,
+  LeftValue,
+  Description,
+  donationTableData,
+  socialLink,
+  BgImage,
+  campaignID,
+}: DrawerContentProps) {
+  return (
     <Box
       sx={{ width: "48rem", borderRadius: "5rem", padding: "1rem" }}
       role="presentation"
@@ -71,7 +79,7 @@ const Home: NextPage = () => {
       <div className="flex flex-col w-full text-[var(--primary)]">
         <div
           className="flex   justify-start items-center space-x-1"
-          onClick={toggleDrawer(false)}
+          onClick={handleDrawerClose}
         >
           <Close
             sx={{
@@ -89,25 +97,23 @@ const Home: NextPage = () => {
 
         <div className="flex justify-center items-center my-4">
           <Image
-            src={c3}
+            src={BgImage}
             width={800}
             height={800}
             alt="Campaign Background"
             className=" rounded-xl"
           />
         </div>
-        <div className="flex justify-center items-center my-4">
+        {/* <div className="flex justify-center items-center my-4">
           <ImageRowComponent />
-        </div>
+        </div> */}
 
         <div className="flex justify-start items-center my-4 w-full">
-          <h1 className="text-3xl font-semibold max-w-[32vw]">
-            Help raise funds for Cancer patients at California Hospital{" "}
-          </h1>
+          <h1 className="text-3xl font-semibold max-w-[32vw]">{title}</h1>
           <Gauge
             width={80}
             height={80}
-            value={50}
+            value={progress}
             cornerRadius="50%"
             sx={theme => ({
               [`& .${gaugeClasses.valueText}`]: {
@@ -124,7 +130,7 @@ const Home: NextPage = () => {
           />
         </div>
 
-        <ProgressBar progress={50} />
+        <ProgressBar progress={progress} />
 
         <div className="flex justify-start items-center my-6 w-full space-x-4  ">
           <Button
@@ -186,9 +192,9 @@ const Home: NextPage = () => {
 
         <div className="max-w-7/12  border-r border-l border-b  border-gray-300 rounded-xl  ">
           <StatCard
-            raisedValue={"$25,000"}
-            GoalValue={"$50,000"}
-            LeftValue={"$25,000"}
+            raisedValue={raisedValue}
+            GoalValue={GoalValue}
+            LeftValue={LeftValue}
           />
         </div>
 
@@ -198,14 +204,8 @@ const Home: NextPage = () => {
             component1={
               <>
                 <Details
-                  description="   Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
-        occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-        mollit anim id est laborum"
-                  xLink="/"
+                  description={Description}
+                  xLink={socialLink}
                   InstaLink="/"
                   FaceBookLink="/"
                 />
@@ -213,7 +213,11 @@ const Home: NextPage = () => {
             }
             component2={
               <>
-                <DonationHistoryTable tableData={donationTableData} />
+                {campaignID && (
+                  <DonationHistoryTable
+                    tableData={donationTableData[campaignID] || []}
+                  />
+                )}
               </>
             }
             component3={<div className="min-h-[30vh]"></div>}
@@ -225,6 +229,44 @@ const Home: NextPage = () => {
       </div>
     </Box>
   )
+}
+
+const Home: NextPage = () => {
+  const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
+  const [selectedCampaign, setSelectedCampaign] = useState<CampaignType | null>(
+    null
+  )
+
+  const handleDonationClose = () => {
+    setDonationPopUpOpen(false)
+  }
+  const handleDonationOpen = () => {
+    setDonationPopUpOpen(true)
+  }
+
+  const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
+  const handleCampaignClose = () => {
+    setCampaignPopUpOpen(false)
+  }
+  const handleCampaignOpen = () => {
+    setCampaignPopUpOpen(true)
+  }
+
+  const [openDrawer, setOpenDrawer] = React.useState(false)
+
+  // const toggleDrawer = (newOpen: boolean) => () => {
+  //   setOpenDrawer(newOpen)
+  // }
+
+  const handleDrawerOpen = (campaign: CampaignType) => {
+    setSelectedCampaign(campaign)
+    setOpenDrawer(true)
+  }
+
+  const handleDrawerClose = () => {
+    setOpenDrawer(false)
+    setSelectedCampaign(null)
+  }
 
   return (
     <div className="flex flex-col relative ">
@@ -249,12 +291,48 @@ const Home: NextPage = () => {
 
       <Drawer
         open={openDrawer}
-        onClose={toggleDrawer(false)}
+        onClose={handleDrawerClose}
         anchor="right"
         disableEnforceFocus
       >
-        {DrawerList}
+        {selectedCampaign && (
+          <DrawerContent
+            handleDonationOpen={handleDonationOpen}
+            handleDrawerClose={handleDrawerClose}
+            raisedValue={selectedCampaign.raisedValue || "$0"}
+            GoalValue={selectedCampaign.GoalValue || "$0"}
+            LeftValue={selectedCampaign.LeftValue || "$0"}
+            campaignID={selectedCampaign.campaignID || "0"}
+            donationTableData={donationTableData}
+            Description={selectedCampaign.Description || "null"}
+            socialLink={selectedCampaign.socialLink || "/"}
+            title={selectedCampaign.title || "null"}
+            progress={selectedCampaign.progress || 50}
+            BgImage={selectedCampaign.bgImage}
+          />
+        )}
       </Drawer>
+
+      {/* <Drawer
+        open={openDrawer}
+        onClose={handleDrawerClose}
+        anchor="right"
+        disableEnforceFocus
+      >
+        <DrawerContent
+          handleDonationOpen={handleDonationOpen}
+          handleDrawerClose={handleDrawerClose}
+          raisedValue=""
+          GoalValue=""
+          LeftValue=""
+          donationTableData={donationTableData}
+          Description=""
+          socialLink=""
+          title=""
+          progress={50}
+          BgImage={c3}
+        />
+      </Drawer> */}
 
       <div className="mt-4">
         <TabsComponent
@@ -263,7 +341,7 @@ const Home: NextPage = () => {
             <CampaignCardContainer
               campaignsList={campaignsList}
               handlePopUp={handleDonationOpen}
-              handleDrawer={toggleDrawer(true)}
+              handleDrawer={handleDrawerOpen}
             />
           }
           component2={<>Content for Oragnizations campaigns</>}

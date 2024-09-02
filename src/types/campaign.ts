@@ -11,9 +11,13 @@ export interface CampaignCardPropsType {
 }
 
 export interface CampaignType {
-  bgImage: StaticImageData | string
+  campaignID: string
+  bgImage: StaticImageData
   title: string
   raisedValue: string
   GoalValue: string
   LeftValue: string
+  Description: string
+  socialLink: string
+  progress: number
 }

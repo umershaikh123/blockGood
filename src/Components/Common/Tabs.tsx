@@ -1,7 +1,5 @@
 "use client"
 import * as React from "react"
-import { CampaignCardContainer } from "../../Components/Common/Card"
-import { campaignsList } from "../../constants/campaigns"
 import { Fade, Zoom, Slide } from "@mui/material"
 
 interface Tab {
