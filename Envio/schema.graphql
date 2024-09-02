@@ -1,0 +1,34 @@
+type Donationtracker_CampaignCreated {
+  id: ID!
+  campaignId: BigInt!
+  creator: String!
+}
+
+type Donationtracker_CampaignEnded {
+  id: ID!
+  campaignId: BigInt!
+  creator: String!
+  refundedFee: BigInt!
+}
+
+type Donationtracker_DonationReceived {
+  id: ID!
+  campaignId: BigInt!
+  donor: String!
+  amount: BigInt!
+}
+
+type Donationtracker_ProofUploaded {
+  id: ID!
+  campaignId: BigInt!
+  withdrawalId: BigInt!
+  proofUrl: String!
+}
+
+type Donationtracker_WithdrawalMade {
+  id: ID!
+  campaignId: BigInt!
+  admin: String!
+  amount: BigInt!
+}
+

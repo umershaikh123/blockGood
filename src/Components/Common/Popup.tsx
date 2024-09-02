@@ -16,6 +16,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
 
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
+import { donatationTracker_contractAddresses } from "../../constants/contracts"
 
 const DonationPopup = ({ handleClose }: { handleClose: () => void }) => {
   return (
@@ -127,7 +128,7 @@ export const RegisterIndividualPopup = ({
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
 
-    const contractAddress = "0xE8e1D0EC12BDc3eaA3510d898640e13ca48cbb2F" //sepolia
+    const contractAddress = donatationTracker_contractAddresses.sepolia
     const donationContract = new ethers.Contract(
       contractAddress,
       donationTrackerAbi,
@@ -443,7 +444,7 @@ export const RegisterOrganizationPopup = ({
     const signer = provider.getSigner()
     console.log("provider", provider)
     console.log("signer", signer)
-    const contractAddress = "0xE8e1D0EC12BDc3eaA3510d898640e13ca48cbb2F" //sepolia
+    const contractAddress = "0xE35DE3EF40C8E86F1B9D467D76C6DC3408aBCDD0" //sepolia
     const donationContract = new ethers.Contract(
       contractAddress,
       donationTrackerAbi,
