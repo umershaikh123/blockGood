@@ -1,35 +1,35 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: blockgood
 contracts:
-- name: donationtracker
-  handler: src/EventHandlers.ts
-  events:
-  - event: CampaignCreated(uint256 campaignId, address indexed creator)
-  - event: CampaignEnded(uint256 campaignId, address creator, uint256 refundedFee)
-  - event: DonationReceived(uint256 campaignId, address indexed donor, uint256 amount)
-  - event: ProofUploaded(uint256 campaignId, uint256 withdrawalId, string proofUrl)
-  - event: WithdrawalMade(uint256 campaignId, address indexed admin, uint256 amount)
+  - name: donationtracker
+    handler: src/EventHandlers.ts
+    events:
+      - event: CampaignCreated(uint256 campaignId, address indexed creator)
+      - event: CampaignEnded(uint256 campaignId, address creator, uint256 refundedFee)
+      - event: DonationReceived(uint256 campaignId, address indexed donor, uint256 amount)
+      - event: ProofUploaded(uint256 campaignId, uint256 withdrawalId, string proofUrl)
+      - event: WithdrawalMade(uint256 campaignId, address indexed admin, uint256 amount)
 networks:
-- id: 31
-  rpc_config:
-    url: https://public-node.testnet.rsk.co
-  start_block: 0
-  contracts:
-  - name: donationtracker
-    address:
-    - 0x75240BC94E70F6d459C374cA674477A96b037529
-- id: 2810
-  rpc_config:
-    url: https://rpc-quicknode-holesky.morphl2.io
-  start_block: 0
-  contracts:
-  - name: donationtracker
-    address:
-    - 0x9ABc61d3ee74B5F8affe77cBBC99ea8054D51Cb9
-- id: 11155111
-  start_block: 0
-  contracts:
-  - name: donationtracker
-    address:
-    - 0x7167C5B16dA69Ba6C0Ba00710Bd828B552486bD9
+  - id: 31
+    rpc_config:
+      url: https://public-node.testnet.rsk.co
+    start_block: 5498739
+    contracts:
+      - name: donationtracker
+        address:
+          - 0x75240BC94E70F6d459C374cA674477A96b037529
+  - id: 2810
+    rpc_config:
+      url: https://rpc-quicknode-holesky.morphl2.io
+    start_block: 7739048
+    contracts:
+      - name: donationtracker
+        address:
+          - 0x9ABc61d3ee74B5F8affe77cBBC99ea8054D51Cb9
+  - id: 11155111
+    start_block: 6620479
+    contracts:
+      - name: donationtracker
+        address:
+          - 0x7167C5B16dA69Ba6C0Ba00710Bd828B552486bD9
 rollback_on_reorg: false
