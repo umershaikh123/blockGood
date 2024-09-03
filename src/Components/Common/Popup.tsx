@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@mui/material"
 import { Close } from "@mui/icons-material"
 import TextField from "@mui/material/TextField"
@@ -14,8 +14,11 @@ import { toast, ToastContainer } from "react-toastify"
 import { ToastIcon } from "react-toastify/dist/types"
 import "react-toastify/dist/ReactToastify.css"
 import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
+import axios from 'axios';
 
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
+import { getContractAddress } from "../../constants/chainConfig"
+import { useAccount } from "wagmi"
 import { donatationTracker_contractAddresses } from "../../constants/contracts"
 
 const DonationPopup = ({ handleClose }: { handleClose: () => void }) => {
@@ -398,6 +401,351 @@ export const RegisterIndividualPopup = ({
           onClick={handleIndividualRegister}
         >
           Register
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJhMGU0N2YyNC00Y2I3LTRkY2ItYmNlZC03ZGMyMTZjZGYwNTYiLCJlbWFpbCI6InJpdGlrbGFraHdhbmkyOEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6IkZSQTEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX0seyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiNDZjZjBjYjBmMTRiZWViMGE4YzkiLCJzY29wZWRLZXlTZWNyZXQiOiI0NzYzZmY3MGE1YmNmM2VjOGUwY2RlNGQyYmI5NzFmMTM5MmJhMWNlYzhhOGJlMGQ3ZTM2MmUyYzdmMjJiZTA5IiwiaWF0IjoxNzI1MzA5MjEyfQ.dJtPunpHMniuWGI_ifhjTEwHHrPu6WD8GLcDq8MOV-E";
+
+const uploadImageToIPFS = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const pinataMetadata = JSON.stringify({
+    name: file.name,
+  });
+  formData.append('pinataMetadata', pinataMetadata);
+
+  const pinataOptions = JSON.stringify({
+    cidVersion: 0,
+  });
+  formData.append('pinataOptions', pinataOptions);
+
+  try {
+    const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
+      maxBodyLength: Infinity,
+      headers: {
+        'Content-Type': `multipart/form-data`,
+        'Authorization': `Bearer ${JWT}`
+      }
+    });
+    return `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`;
+  } catch (error) {
+    console.error("Error uploading image to IPFS:", error);
+    throw error;
+  }
+};
+
+export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
+  const { chain } = useAccount()
+  const { chain: networkChain } = useAccount()
+  const [formValues, setFormValues] = useState({
+    title: "",
+    description: "",
+    goal: "",
+    coverImage: null as File | null,
+    destinationChainSelector: "",
+  })
+
+  useEffect(() => {
+    if (networkChain) {
+      console.log("Current chain:", networkChain.name, "Chain ID:", networkChain.id)
+      setFormValues(prevValues => ({
+        ...prevValues,
+        destinationChainSelector: networkChain.id.toString(),
+      }))
+    }
+  }, [networkChain])
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = event.target
+    console.log(`Input changed: ${name} = ${files ? files[0]?.name : value}`)
+    setFormValues(prevValues => ({
+      ...prevValues,
+      [name]: files ? files[0] : value,
+    }))
+  }
+
+  const handleCreateCampaign = async () => {
+    const { title, description, goal, coverImage, destinationChainSelector } = formValues;
+    console.log("Creating campaign with values:", { title, description, goal, coverImage: coverImage?.name, destinationChainSelector });
+
+    if (!title || !description || !goal || !coverImage) {
+      console.error("Missing required fields");
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const pendingToastId = toast.loading("Uploading image and creating campaign...", {
+      icon: "⏳" as unknown as ToastIcon,
+    });
+
+    try {
+      console.log("Uploading image to IPFS...");
+      const coverImageUrl = await uploadImageToIPFS(coverImage);
+      console.log("Image uploaded, URL:", coverImageUrl);
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      
+      const chainId = networkChain?.id || 11155111;
+      console.log("Using chain ID:", chainId);
+      const contractAddress = getContractAddress(chainId);
+      console.log("Contract address:", contractAddress);
+      const donationContract = new ethers.Contract(contractAddress, donationTrackerAbi, signer);
+
+      const goalInWei = ethers.utils.parseEther(goal);
+      console.log("Goal in Wei:", goalInWei.toString());
+
+      const address = await signer.getAddress();
+      console.log("Signer address:", address);
+      
+      const isIndividual = await donationContract.isRegisteredAsIndividual(address);
+      const isOrganization = await donationContract.isRegisteredAsOrganization(address);
+      console.log("Is individual:", isIndividual, "Is organization:", isOrganization);
+      
+      if (!isIndividual && !isOrganization) {
+        throw new Error("You must be registered as an individual or organization to create a campaign");
+      }
+
+      const requiredFee = isIndividual ? await donationContract.INDIVIDUAL_FEE() : await donationContract.ORGANIZATION_FEE();
+      console.log("Required fee:", ethers.utils.formatEther(requiredFee), "ETH");
+
+      console.log("Creating campaign transaction...");
+      
+      // request account access 
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      // create the transaction
+      const tx = await donationContract.createCampaign(
+        title,
+        description,
+        goalInWei,
+        coverImageUrl,
+        destinationChainSelector,
+        { value: requiredFee }
+      );
+
+      console.log("Transaction sent, waiting for confirmation...");
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed, receipt:", receipt);
+
+      toast.update(pendingToastId, {
+        render: "Campaign created successfully!",
+        type: "success",
+        icon: "✅" as unknown as ToastIcon,
+        autoClose: 5000,
+        isLoading: false,
+      });
+      handleClose();
+    } catch (error: any) {
+      console.error("Error creating campaign:", error);
+      toast.update(pendingToastId, {
+        render: `Failed to create campaign: ${error.message}`,
+        type: "error",
+        icon: "❌" as unknown as ToastIcon,
+        autoClose: 5000,
+        isLoading: false,
+      });
+    }
+  }
+
+  return (
+    <div onClick={event => event.stopPropagation()}>
+      <div className="flex flex-col w-[50rem] max-h-[92vh] py-2 bg-[var(--Bg)] rounded-xl items-center relative overflow-y-auto">
+        <div className="absolute top-2 right-5" onClick={handleClose}>
+          <Close
+            sx={{
+              color: "var(--primary)",
+              fontSize: 40,
+              ":hover": {
+                transition: "transform 0.3s ease-in-out",
+                transform: "rotate(90deg)",
+              },
+            }}
+          />
+        </div>
+        <h1 className="text-4xl text-[var(--primary)] font-semibold my-4">
+          Create Campaign
+        </h1>
+
+        <TextField
+          name="title"
+          type="text"
+          label="Title"
+          placeholder="Enter title of the campaign ..."
+          value={formValues.title}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="description"
+          type="text"
+          label="Description"
+          multiline
+          placeholder="Enter Description of the campaign ..."
+          value={formValues.description}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="goal"
+          type="number"
+          label="Goal (in ETH)"
+          placeholder="Enter Goal of the campaign ..."
+          value={formValues.goal}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="coverImage"
+          type="file"
+          label="Cover Image"
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+        />
+
+        {/* Remove the TextField for destinationChainSelector and replace it with a read-only display */}
+        <div className="my-4 max-w-[25rem] w-full">
+          <p className="text-[var(--primary)] mb-2">Destination Chain:</p>
+          <p className="text-[var(--secondary)] font-semibold">{networkChain?.name || 'Unknown Chain'}</p>
+        </div>
+
+        <Button
+          variant="contained"
+          onClick={handleCreateCampaign}
+          sx={{
+            backgroundColor: "var(--primary)",
+            color: "var(--Bg)",
+            textTransform: "capitalize",
+            px: "3rem",
+            py: "4px",
+            fontWeight: 500,
+            borderRadius: "0.3rem",
+          }}
+        >
+          Create
         </Button>
       </div>
     </div>
@@ -904,323 +1252,5 @@ export function RowRadioButtonsGroup() {
   )
 }
 
-export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
-  return (
-    <div onClick={event => event.stopPropagation()}>
-      <div className="flex flex-col w-[50rem] max-h-[92vh] py-2 bg-[var(--Bg)] rounded-xl   items-center relative overflow-y-auto ">
-        <div className=" absolute top-2 right-5" onClick={handleClose}>
-          <Close
-            sx={{
-              color: "var(--primary)",
-              fontSize: 40,
-              ":hover": {
-                transition: "transform 0.3s ease-in-out",
-
-                transform: "rotate(90deg)",
-              },
-            }}
-          />
-        </div>
-        <h1 className=" text-4xl text-[var(--primary)] font-semibold my-2">
-          Create new Campaign
-        </h1>
-        <TextField
-          type="text"
-          label="Title"
-          placeholder="Enter title of the campaign ..."
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <TextField
-          type="text"
-          label="Description"
-          multiline
-          placeholder="Enter Description of the campaign ..."
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <TextField
-          type="text"
-          label="Category"
-          placeholder="Enter Category of the campaign ..."
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <TextField
-          type="text"
-          label="Goal"
-          placeholder="Enter Goal of the campaign ..."
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <TextField
-          type="text"
-          label="Twitter Link"
-          placeholder="Enter twitter profile link ..."
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <TextField
-          type="file"
-          label="Background Image"
-          placeholder="upload Background Image of the Campaign..."
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PhotoIcon sx={{ color: "var(--primary)" }} />
-                </InputAdornment>
-              ),
-              inputProps: {
-                // accept: "image/*,application/pdf",
-              },
-            },
-          }}
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <TextField
-          type="file"
-          label="Proof of Identity"
-          placeholder="upload an Image/File that proves the validity of your Campaign..."
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PhotoIcon sx={{ color: "var(--primary)" }} />
-                </InputAdornment>
-              ),
-              inputProps: {
-                multiple: true,
-                // accept: "image/*,application/pdf",
-              },
-            },
-          }}
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          variant="outlined"
-          fullWidth
-        />
-
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: "var(--primary)",
-            color: "var(--Bg)",
-            textTransform: "capitalize",
-            px: "4rem",
-            py: "4px",
-            my: "1rem",
-            fontSize: 20,
-            fontWeight: 500,
-            borderRadius: "0.3rem",
-          }}
-        >
-          Create
-        </Button>
-      </div>
-    </div>
-  )
-}
 
 export default DonationPopup
