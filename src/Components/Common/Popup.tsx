@@ -655,7 +655,10 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
       //   : await donationContract.ORGANIZATION_FEE()
 
       // const requiredFee = isIndividual ? "0.0073" : "0.036"
-      const requiredFee = isIndividual ? 7300000000000000 : 36000000000000000
+
+      const requiredFee = isIndividual
+        ? BigInt(7300000000000000)
+        : BigInt(36000000000000000)
       console.log("Required fee:", ethers.utils.formatEther(requiredFee), "ETH")
 
       console.log("Creating campaign transaction...")
@@ -1015,7 +1018,7 @@ export const RegisterOrganizationPopup = ({
       })
       toast.info(
         <div>
-          View Tx{" "}
+          View{" "}
           <a
             href={`${
               chainConfigs[networkChain?.id || 11155111].blockExplorers.default

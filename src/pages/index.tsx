@@ -237,6 +237,14 @@ const Home: NextPage = () => {
     null
   )
 
+  // get all campaign IDS
+  // fetch campaign data
+  // populate it
+
+  // indivual
+  // get user address
+  // get user campaigns
+  // display it on campaign page
   console.log("selectedCampaign", selectedCampaign)
 
   const handleDonationClose = () => {
@@ -270,6 +278,7 @@ const Home: NextPage = () => {
     setSelectedCampaign(null)
   }
 
+  // https://gateway.pinata.cloud/ipfs/QmaE8UPFZzkYCdVmCdEDnBaQA3jqb5M1m3DTu8SvzCXYjZ
   return (
     <div className="flex flex-col relative ">
       <h1 className=" text-3xl text-[var(--secondary)]   font-bold">
