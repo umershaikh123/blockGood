@@ -1,7 +1,7 @@
 import React from "react"
 
 import { useQuery, gql } from "@apollo/client"
-
+import { useState, useRef } from "react"
 // const GET_LOCATIONS = gql`
 //   query MyQuery {
 //     Metri_Swap(limit: 10) {
@@ -20,11 +20,12 @@ const profile = () => {
   // console.log("Data", data)
 
   return (
-    <div>
+    <div className="flex flex-col">
       <h1 className="text-3xl font-semibold ml-6 text-[var(--primary)]">
         {" "}
         Profile
       </h1>
+
       {/* {data} */}
     </div>
   )

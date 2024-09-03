@@ -14,12 +14,13 @@ import { toast, ToastContainer } from "react-toastify"
 import { ToastIcon } from "react-toastify/dist/types"
 import "react-toastify/dist/ReactToastify.css"
 import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
-import axios from 'axios';
+import axios from "axios"
 
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
-import { getContractAddress } from "../../constants/chainConfig"
+import { chainConfigs, getContractAddress } from "../../constants/chainConfig"
 import { useAccount } from "wagmi"
 import { donatationTracker_contractAddresses } from "../../constants/contracts"
+import { uploadImageToIPFS } from "../../util/ipfs"
 
 const DonationPopup = ({ handleClose }: { handleClose: () => void }) => {
   return (
@@ -103,12 +104,16 @@ export const RegisterIndividualPopup = ({
 }: {
   handleClose: () => void
 }) => {
+  const { chain: networkChain } = useAccount()
   const [formValues, setFormValues] = React.useState({
     name: "",
-    age: "",
     physicalAddress: "",
     phoneNumber: "",
     email: "",
+    age: "",
+    Purpose: "", // medicalCondition: "",
+    requiredTreatment: "",
+    timeline: "",
   })
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,61 +127,75 @@ export const RegisterIndividualPopup = ({
   const handleIndividualRegister = async () => {
     const {
       name,
-
       physicalAddress,
       phoneNumber,
       email,
+      age,
+      Purpose, // medicalCondition
+      requiredTreatment,
+      timeline,
     } = formValues
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner()
+    if (
+      !name ||
+      !physicalAddress ||
+      !phoneNumber ||
+      !email ||
+      !age ||
+      !Purpose ||
+      !requiredTreatment ||
+      !timeline
+    ) {
+      console.error("Missing required fields")
+      toast.error("Please fill in all fields")
+      return
+    }
 
-    const contractAddress = donatationTracker_contractAddresses.sepolia
-    const donationContract = new ethers.Contract(
-      contractAddress,
-      donationTrackerAbi,
-      provider
-    )
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
 
-    // const ContractSigner = donationContract.connect(signer)
-    // const pendingToastId = toast.loading("Transaction Pending...", {
-    //   icon: "⏳" as unknown as ToastIcon,
-    // })
+      const contractAddress =
+        chainConfigs[networkChain?.id || 11155111].contractAddress
+      const donationContract = new ethers.Contract(
+        contractAddress,
+        donationTrackerAbi,
+        provider
+      )
 
-    // try {
-    //   const tx = await ContractSigner.registerOrganization(
-    //     name,
-    //     taxId,
-    //     physicalAddress,
-    //     phoneNumber,
-    //     email,
-    //     website,
-    //     socialMedia,
-    //     registrationProof
-    //   )
+      const pendingToastId = toast.loading("Transaction Pending...")
 
-    //   const receipt = await tx.wait()
-    //   toast.update(pendingToastId, {
-    //     render: <div>Transaction Successful! </div>,
-    //     type: "success",
-    //     icon: "✅" as unknown as ToastIcon,
-    //     autoClose: 5000,
-    //     isLoading: false,
-    //   })
-    // } catch (error: any) {
-    //   toast.update(pendingToastId, {
-    //     render: `Transaction Failed`,
-    //     type: "error",
-    //     icon: "❌" as unknown as ToastIcon,
-    //     autoClose: 5000,
-    //     isLoading: false,
-    //   })
-    // }
+      const ContractSigner = donationContract.connect(signer)
+
+      const tx = await ContractSigner.registerIndividual(
+        name,
+        age,
+        physicalAddress,
+        Purpose, // medicalCondition
+        requiredTreatment,
+        timeline,
+        email,
+        phoneNumber
+      )
+
+      await tx.wait()
+
+      toast.update(pendingToastId, {
+        render: "Registration Successful!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+      })
+    } catch (error: any) {
+      console.error("Error during registration:", error)
+
+      toast.error("Registration Failed: " + (error.message || "Unknown Error"))
+    }
   }
 
   return (
     <div onClick={event => event.stopPropagation()}>
-      <div className="flex flex-col w-[40rem] h-full py-8 max-h-[90vh] bg-[var(--Bg)] rounded-xl   items-center relative overflow-auto">
+      <div className="flex flex-col w-[40rem] h-full py-8 max-h-[94vh] bg-[var(--Bg)] rounded-xl   items-center relative overflow-auto">
         <div className="absolute top-2 right-5" onClick={handleClose}>
           <Close
             sx={{
@@ -312,6 +331,162 @@ export const RegisterIndividualPopup = ({
         />
 
         <TextField
+          name="age"
+          type="text"
+          label="Age"
+          placeholder="Enter your age number ..."
+          value={formValues.age}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="Purpose"
+          type="text"
+          label="Purpose"
+          placeholder="Enter your campaign Purpose ..."
+          value={formValues.Purpose}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="requiredTreatment"
+          type="text"
+          label="Require"
+          placeholder="Enter what you require ..."
+          value={formValues.requiredTreatment}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
+          name="timeline"
+          type="text"
+          label="Timeline"
+          placeholder="Enter timeline of your expenses ..."
+          value={formValues.timeline}
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+
+        <TextField
           name="email"
           type="email"
           label="Email"
@@ -350,43 +525,6 @@ export const RegisterIndividualPopup = ({
           fullWidth
         />
 
-        <TextField
-          name="registrationProof"
-          type="file"
-          label="Proof of Identity"
-          onChange={handleInputChange}
-          sx={{
-            marginY: "1rem",
-            maxWidth: "25rem",
-            "& label": {
-              color: "var(--primary)",
-              "&.Mui-focused": {
-                color: "var(--secondary)",
-              },
-            },
-            "& input": {
-              color: "var(--primary)",
-              backgroundColor: "var(--Bg)",
-            },
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&:hover fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-              },
-            },
-          }}
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-        />
-
         <Button
           variant="contained"
           sx={{
@@ -407,39 +545,7 @@ export const RegisterIndividualPopup = ({
   )
 }
 
-const JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJhMGU0N2YyNC00Y2I3LTRkY2ItYmNlZC03ZGMyMTZjZGYwNTYiLCJlbWFpbCI6InJpdGlrbGFraHdhbmkyOEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6IkZSQTEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX0seyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiNDZjZjBjYjBmMTRiZWViMGE4YzkiLCJzY29wZWRLZXlTZWNyZXQiOiI0NzYzZmY3MGE1YmNmM2VjOGUwY2RlNGQyYmI5NzFmMTM5MmJhMWNlYzhhOGJlMGQ3ZTM2MmUyYzdmMjJiZTA5IiwiaWF0IjoxNzI1MzA5MjEyfQ.dJtPunpHMniuWGI_ifhjTEwHHrPu6WD8GLcDq8MOV-E";
-
-const uploadImageToIPFS = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const pinataMetadata = JSON.stringify({
-    name: file.name,
-  });
-  formData.append('pinataMetadata', pinataMetadata);
-
-  const pinataOptions = JSON.stringify({
-    cidVersion: 0,
-  });
-  formData.append('pinataOptions', pinataOptions);
-
-  try {
-    const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
-      maxBodyLength: Infinity,
-      headers: {
-        'Content-Type': `multipart/form-data`,
-        'Authorization': `Bearer ${JWT}`
-      }
-    });
-    return `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`;
-  } catch (error) {
-    console.error("Error uploading image to IPFS:", error);
-    throw error;
-  }
-};
-
 export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
-  const { chain } = useAccount()
   const { chain: networkChain } = useAccount()
   const [formValues, setFormValues] = useState({
     title: "",
@@ -451,7 +557,12 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
 
   useEffect(() => {
     if (networkChain) {
-      console.log("Current chain:", networkChain.name, "Chain ID:", networkChain.id)
+      console.log(
+        "Current chain:",
+        networkChain.name,
+        "Chain ID:",
+        networkChain.id
+      )
       setFormValues(prevValues => ({
         ...prevValues,
         destinationChainSelector: networkChain.id.toString(),
@@ -469,54 +580,88 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
   }
 
   const handleCreateCampaign = async () => {
-    const { title, description, goal, coverImage, destinationChainSelector } = formValues;
-    console.log("Creating campaign with values:", { title, description, goal, coverImage: coverImage?.name, destinationChainSelector });
+    const { title, description, goal, coverImage, destinationChainSelector } =
+      formValues
+    console.log("Creating campaign with values:", {
+      title,
+      description,
+      goal,
+      coverImage: coverImage?.name,
+      destinationChainSelector,
+    })
 
     if (!title || !description || !goal || !coverImage) {
-      console.error("Missing required fields");
-      toast.error("Please fill in all fields");
-      return;
+      console.error("Missing required fields")
+      toast.error("Please fill in all fields")
+      return
     }
 
-    const pendingToastId = toast.loading("Uploading image and creating campaign...", {
-      icon: "⏳" as unknown as ToastIcon,
-    });
+    const pendingToastId = toast.loading(
+      "Uploading image and creating campaign...",
+      {
+        icon: "⏳" as unknown as ToastIcon,
+      }
+    )
 
     try {
-      console.log("Uploading image to IPFS...");
-      const coverImageUrl = await uploadImageToIPFS(coverImage);
-      console.log("Image uploaded, URL:", coverImageUrl);
+      console.log("Uploading image to IPFS...")
+      const coverImageUrl = await uploadImageToIPFS(coverImage)
+      console.log("Image uploaded, URL:", coverImageUrl)
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      
-      const chainId = networkChain?.id || 11155111;
-      console.log("Using chain ID:", chainId);
-      const contractAddress = getContractAddress(chainId);
-      console.log("Contract address:", contractAddress);
-      const donationContract = new ethers.Contract(contractAddress, donationTrackerAbi, signer);
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
 
-      const goalInWei = ethers.utils.parseEther(goal);
-      console.log("Goal in Wei:", goalInWei.toString());
+      const chainId = networkChain?.id || 11155111
+      console.log("Using chain ID:", chainId)
+      const contractAddress = getContractAddress(chainId)
+      console.log("Contract address:", contractAddress)
+      const donationContract = new ethers.Contract(
+        contractAddress,
+        donationTrackerAbi,
+        signer
+      )
 
-      const address = await signer.getAddress();
-      console.log("Signer address:", address);
-      
-      const isIndividual = await donationContract.isRegisteredAsIndividual(address);
-      const isOrganization = await donationContract.isRegisteredAsOrganization(address);
-      console.log("Is individual:", isIndividual, "Is organization:", isOrganization);
-      
+      const goalInWei = ethers.utils.parseEther(goal)
+      console.log("Goal in Wei:", goalInWei.toString())
+
+      const address = await signer.getAddress()
+      console.log("Signer address:", address)
+
+      const isIndividual = await donationContract.isRegisteredAsIndividual(
+        address
+      )
+      const isOrganization = await donationContract.isRegisteredAsOrganization(
+        address
+      )
+      // const [isIndividual, isOrganization] = await Promise.all([
+      //   donationContract.isRegisteredAsIndividual(address),
+      //   donationContract.isRegisteredAsOrganization(address),
+      // ])
+      console.log(
+        "Is individual:",
+        isIndividual,
+        "Is organization:",
+        isOrganization
+      )
+
       if (!isIndividual && !isOrganization) {
-        throw new Error("You must be registered as an individual or organization to create a campaign");
+        throw new Error(
+          "You must be registered as an individual or organization to create a campaign"
+        )
       }
 
-      const requiredFee = isIndividual ? await donationContract.INDIVIDUAL_FEE() : await donationContract.ORGANIZATION_FEE();
-      console.log("Required fee:", ethers.utils.formatEther(requiredFee), "ETH");
+      // const requiredFee = isIndividual
+      //   ? await donationContract.INDIVIDUAL_FEE()
+      //   : await donationContract.ORGANIZATION_FEE()
 
-      console.log("Creating campaign transaction...");
-      
-      // request account access 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      // const requiredFee = isIndividual ? "0.0073" : "0.036"
+      const requiredFee = isIndividual ? 7300000000000000 : 36000000000000000
+      console.log("Required fee:", ethers.utils.formatEther(requiredFee), "ETH")
+
+      console.log("Creating campaign transaction...")
+
+      // request account access
+      await window.ethereum.request({ method: "eth_requestAccounts" })
 
       // create the transaction
       const tx = await donationContract.createCampaign(
@@ -526,11 +671,11 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         coverImageUrl,
         destinationChainSelector,
         { value: requiredFee }
-      );
+      )
 
-      console.log("Transaction sent, waiting for confirmation...");
-      const receipt = await tx.wait();
-      console.log("Transaction confirmed, receipt:", receipt);
+      console.log("Transaction sent, waiting for confirmation...")
+      const receipt = await tx.wait()
+      console.log("Transaction confirmed, receipt:", receipt)
 
       toast.update(pendingToastId, {
         render: "Campaign created successfully!",
@@ -538,23 +683,23 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         icon: "✅" as unknown as ToastIcon,
         autoClose: 5000,
         isLoading: false,
-      });
-      handleClose();
+      })
+      handleClose()
     } catch (error: any) {
-      console.error("Error creating campaign:", error);
+      console.error("Error creating campaign:", error)
       toast.update(pendingToastId, {
         render: `Failed to create campaign: ${error.message}`,
         type: "error",
         icon: "❌" as unknown as ToastIcon,
         autoClose: 5000,
         isLoading: false,
-      });
+      })
     }
   }
 
   return (
     <div onClick={event => event.stopPropagation()}>
-      <div className="flex flex-col w-[50rem] max-h-[92vh] py-2 bg-[var(--Bg)] rounded-xl items-center relative overflow-y-auto">
+      <div className="flex flex-col w-[40rem] max-h-[92vh] py-6 bg-[var(--Bg)] rounded-xl items-center relative overflow-y-auto">
         <div className="absolute top-2 right-5" onClick={handleClose}>
           <Close
             sx={{
@@ -728,8 +873,14 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
 
         {/* Remove the TextField for destinationChainSelector and replace it with a read-only display */}
         <div className="my-4 max-w-[25rem] w-full">
-          <p className="text-[var(--primary)] mb-2">Destination Chain:</p>
-          <p className="text-[var(--secondary)] font-semibold">{networkChain?.name || 'Unknown Chain'}</p>
+          <p className="text-[var(--primary)] mb-2 text-lg">
+            Destination Chain:
+          </p>
+          <div className="flex justify-center item border border-[var(--primary)] py-3  rounded-sm">
+            <p className="text-[var(--primary)] font-medium  ">
+              {networkChain?.name || "Unknown Chain"}
+            </p>
+          </div>
         </div>
 
         <Button
@@ -757,6 +908,8 @@ export const RegisterOrganizationPopup = ({
 }: {
   handleClose: () => void
 }) => {
+  const { chain: networkChain } = useAccount()
+
   const [formValues, setFormValues] = React.useState({
     name: "",
     taxId: "",
@@ -788,11 +941,47 @@ export const RegisterOrganizationPopup = ({
       registrationProof,
     } = formValues
 
+    if (
+      !name ||
+      !physicalAddress ||
+      !phoneNumber ||
+      !email ||
+      !website ||
+      !socialMedia
+    ) {
+      console.error("Missing required fields")
+      toast.error("Please fill in all fields")
+      return
+    }
+
+    if (!registrationProof) {
+      toast.error("Please upload the registration proof")
+      return
+    }
+
+    const pendingToastId = toast.loading("Uploading image to IPFS...", {
+      icon: "⏳" as unknown as ToastIcon,
+    })
+
+    console.log("Uploading image to IPFS...")
+    const registrationProofUrl = await uploadImageToIPFS(registrationProof)
+
+    console.log("Image uploaded, URL:", registrationProofUrl)
+
+    toast.update(pendingToastId, {
+      render: "Image uploaded successfully",
+      type: "success",
+      icon: "✅" as unknown as ToastIcon,
+      autoClose: 3000,
+      isLoading: false,
+    })
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
-    console.log("provider", provider)
-    console.log("signer", signer)
-    const contractAddress = "0xE35DE3EF40C8E86F1B9D467D76C6DC3408aBCDD0" //sepolia
+
+    const contractAddress =
+      chainConfigs[networkChain?.id || 11155111].contractAddress
+
+    // const contractAddress = "0xE35DE3EF40C8E86F1B9D467D76C6DC3408aBCDD0"
     const donationContract = new ethers.Contract(
       contractAddress,
       donationTrackerAbi,
@@ -800,7 +989,7 @@ export const RegisterOrganizationPopup = ({
     )
     console.log("donationContract", donationContract)
     const ContractSigner = donationContract.connect(signer)
-    const pendingToastId = toast.loading("Transaction Pending...", {
+    const pendingTxToastId = toast.loading("Transaction Pending...", {
       icon: "⏳" as unknown as ToastIcon,
     })
 
@@ -817,7 +1006,7 @@ export const RegisterOrganizationPopup = ({
       )
 
       const receipt = await tx.wait()
-      toast.update(pendingToastId, {
+      toast.update(pendingTxToastId, {
         render: <div>Transaction Successful! </div>,
         type: "success",
         icon: "✅" as unknown as ToastIcon,
@@ -828,7 +1017,10 @@ export const RegisterOrganizationPopup = ({
         <div>
           View Tx{" "}
           <a
-            href={`https://sepolia.etherscan.io/tx/${receipt.transactionHash}`}
+            href={`${
+              chainConfigs[networkChain?.id || 11155111].blockExplorers.default
+                .url
+            }/tx/${receipt.transactionHash}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "var(--secondary)", textDecoration: "underline" }}
@@ -870,7 +1062,6 @@ export const RegisterOrganizationPopup = ({
           Register Organization
         </h1>
 
-        {/** Render TextField components for each form input, with the appropriate name and value */}
         <TextField
           name="name"
           type="text"
@@ -1251,6 +1442,5 @@ export function RowRadioButtonsGroup() {
     </div>
   )
 }
-
 
 export default DonationPopup
