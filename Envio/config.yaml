@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: blockgood
 contracts:
-  - name: donationtracker
+  - name: DonationTracker
     handler: src/EventHandlers.ts
     events:
       - event: CampaignCreated(uint256 campaignId, address indexed creator)
