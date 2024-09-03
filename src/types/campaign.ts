@@ -1,30 +1,28 @@
 import { StaticImageData } from "next/image"
-
+import { BigNumber } from "ethers"
 export interface CampaignCardPropsType {
-  bgImage: StaticImageData | string
+  bgImage: string
   title: string
-  raisedValue: string
-  GoalValue: string
-  LeftValue: string
+  raisedValue: BigNumber
+  GoalValue: BigNumber
+  progress: number
   handleClick: any
   handleDrawer: any
 }
 
 export interface CampaignType {
-  campaignID: string
+  campaignId: string
   creator: string
-  withdrawn: string
+  title: string
+  description: string
+  goal: BigNumber
+  raised: BigNumber
+  withdrawn: number
+  coverImage: string
   active: boolean
   withdrawalCount: number
+  admins: string[]
   creationFee: number
   lastWithdrawalProofUploaded: boolean
   destinationChainSelector: number
-  bgImage: StaticImageData
-  title: string
-  raisedValue: string
-  GoalValue: string
-  LeftValue: string
-  Description: string
-  socialLink: string
-  progress: number
 }

@@ -2,14 +2,6 @@ import React from "react"
 
 import { useQuery, gql } from "@apollo/client"
 import { useState, useRef } from "react"
-// const GET_LOCATIONS = gql`
-//   query MyQuery {
-//     Metri_Swap(limit: 10) {
-//       buyAmount
-//       buyToken
-//     }
-//   }
-// `
 
 const profile = () => {
   // const { loading, error, data } = useQuery(GET_LOCATIONS)

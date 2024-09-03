@@ -6,6 +6,6 @@ import {
 } from "@apollo/client"
 
 export const graphClient = new ApolloClient({
-  uri: "https://indexer.bigdevenergy.link/9c92bac/v1/graphql",
+  uri: "https://indexer.bigdevenergy.link/aeba037/v1/graphql",
   cache: new InMemoryCache(),
 })

@@ -20,13 +20,21 @@ import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge"
 import ProgressBar from "../Components/Common/ProgressBar"
 import ForumIcon from "@mui/icons-material/Forum"
 import { StatCard } from "../Components/Common/Card"
-import { campaignsList } from "../constants/campaigns"
+// import { campaignsList } from "../constants/campaigns"
 import { CampaignCardContainer } from "../Components/Common/Card"
 import Details from "../Components/Common/Details"
 import DonationHistoryTable from "../Components/Common/Table"
 import { donationTableData } from "../constants/tableData"
 // import { donationTableData } from "../constants/tableData"
+import { useQuery } from "@apollo/client"
+import { GET_CAMPAIGN_IDS } from "../util/Queries"
 import { CampaignType } from "../types/campaign"
+import { getContractAddress } from "../constants/chainConfig"
+import donationTrackerAbi from "../contracts/abis/donationTracker.json"
+import { ethers } from "ethers"
+import { useAccount } from "wagmi"
+import { calculateCampaignProgress } from "../util"
+import { BigNumber } from "ethers"
 const drawerTabsProps = [
   {
     label: "Details",
@@ -47,13 +55,13 @@ interface DrawerContentProps {
   handleDonationOpen: () => void
   title: string
   progress: number
-  raisedValue: string
-  GoalValue: string
-  LeftValue: string
+  raisedValue: BigNumber
+  GoalValue: BigNumber
+  LeftValue: BigNumber
   Description: string
   donationTableData: any
   socialLink: string
-  BgImage: StaticImageData
+  BgImage: string
   campaignID: string
 }
 
@@ -96,7 +104,7 @@ function DrawerContent({
         </div>
 
         <div className="flex justify-center items-center my-4">
-          <Image
+          <img
             src={BgImage}
             width={800}
             height={800}
@@ -108,8 +116,10 @@ function DrawerContent({
           <ImageRowComponent />
         </div> */}
 
-        <div className="flex justify-start items-center my-4 w-full">
-          <h1 className="text-3xl font-semibold max-w-[32vw]">{title}</h1>
+        <div className="flex justify-between    items-center my-4 w-full">
+          <h1 className="text-3xl font-semibold max-w-[32vw]  w-11/12  ">
+            {title}
+          </h1>
           <Gauge
             width={80}
             height={80}
@@ -232,20 +242,96 @@ function DrawerContent({
 }
 
 const Home: NextPage = () => {
+  type Campaign = {
+    campaignId: string
+    creator: string
+    title: string
+    description: string
+    goal: BigNumber
+    raised: BigNumber
+    withdrawn: number
+    coverImage: string
+    active: boolean
+    withdrawalCount: number
+    admins: string[]
+    creationFee: number
+    lastWithdrawalProofUploaded: boolean
+    destinationChainSelector: number
+  }
+
   const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignType | null>(
+  const [progress, setProgress] = React.useState(0)
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
     null
   )
+  const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
+  const [openDrawer, setOpenDrawer] = React.useState(false)
+  const { chain: networkChain } = useAccount()
+  const { loading, error, data } = useQuery(GET_CAMPAIGN_IDS)
+  const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
 
-  // get all campaign IDS
-  // fetch campaign data
-  // populate it
+  useEffect(() => {
+    const fetchCampaignDetails = async () => {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const contractAddress = getContractAddress(networkChain?.id || 11155111)
+        const donationContract = new ethers.Contract(
+          contractAddress,
+          donationTrackerAbi,
+          signer
+        )
 
-  // indivual
-  // get user address
-  // get user campaigns
-  // display it on campaign page
-  console.log("selectedCampaign", selectedCampaign)
+        const fetchedCampaigns: Campaign[] = []
+
+        for (const campaign of data.DonationTracker_CampaignCreated) {
+          const { campaignId } = campaign
+
+          const campaignDetails = await donationContract.getCampaignDetails(
+            campaignId
+          )
+
+          fetchedCampaigns.push({
+            campaignId,
+            creator: campaignDetails.creator,
+            title: campaignDetails.title,
+            description: campaignDetails.description,
+            goal: campaignDetails.goal,
+            raised: campaignDetails.raised,
+            withdrawn: campaignDetails.withdrawn.toNumber(),
+            coverImage: campaignDetails.coverImage,
+            active: campaignDetails.active,
+            withdrawalCount: campaignDetails.withdrawalCount,
+            admins: campaignDetails.admins,
+            creationFee: campaignDetails.creationFee,
+            lastWithdrawalProofUploaded:
+              campaignDetails.lastWithdrawalProofUploaded,
+            destinationChainSelector: campaignDetails.destinationChainSelector,
+          })
+        }
+        console.log("fetchedCampaigns", fetchedCampaigns)
+        setCampaignsList(fetchedCampaigns)
+      } catch (error) {
+        console.error("Error fetching campaign details:", error)
+      }
+    }
+
+    if (data) {
+      console.log("data", data)
+      fetchCampaignDetails()
+    }
+
+    if (selectedCampaign) {
+      const raisedValue =
+        BigNumber.from(selectedCampaign.raised) || BigNumber.from(0)
+      const goalValue =
+        BigNumber.from(selectedCampaign.goal) || BigNumber.from(0)
+      setProgress(calculateCampaignProgress({ raisedValue, goalValue }))
+    }
+  }, [data, networkChain, selectedCampaign])
+
+  if (loading) return <p>Loading...</p>
+  if (error) return <p>Error : {error.message}</p>
 
   const handleDonationClose = () => {
     setDonationPopUpOpen(false)
@@ -254,7 +340,6 @@ const Home: NextPage = () => {
     setDonationPopUpOpen(true)
   }
 
-  const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
   const handleCampaignClose = () => {
     setCampaignPopUpOpen(false)
   }
@@ -262,13 +347,7 @@ const Home: NextPage = () => {
     setCampaignPopUpOpen(true)
   }
 
-  const [openDrawer, setOpenDrawer] = React.useState(false)
-
-  // const toggleDrawer = (newOpen: boolean) => () => {
-  //   setOpenDrawer(newOpen)
-  // }
-
-  const handleDrawerOpen = (campaign: CampaignType) => {
+  const handleDrawerOpen = (campaign: Campaign) => {
     setSelectedCampaign(campaign)
     setOpenDrawer(true)
   }
@@ -278,7 +357,6 @@ const Home: NextPage = () => {
     setSelectedCampaign(null)
   }
 
-  // https://gateway.pinata.cloud/ipfs/QmaE8UPFZzkYCdVmCdEDnBaQA3jqb5M1m3DTu8SvzCXYjZ
   return (
     <div className="flex flex-col relative ">
       <h1 className=" text-3xl text-[var(--secondary)]   font-bold">
@@ -310,40 +388,23 @@ const Home: NextPage = () => {
           <DrawerContent
             handleDonationOpen={handleDonationOpen}
             handleDrawerClose={handleDrawerClose}
-            raisedValue={selectedCampaign.raisedValue || "$0"}
-            GoalValue={selectedCampaign.GoalValue || "$0"}
-            LeftValue={selectedCampaign.LeftValue || "$0"}
-            campaignID={selectedCampaign.campaignID || "0"}
-            donationTableData={donationTableData}
-            Description={selectedCampaign.Description || "null"}
-            socialLink={selectedCampaign.socialLink || "/"}
+            raisedValue={
+              BigNumber.from(selectedCampaign.raised) || BigNumber.from(0)
+            }
+            GoalValue={
+              BigNumber.from(selectedCampaign.goal) || BigNumber.from(0)
+            }
+            progress={progress}
+            LeftValue={BigNumber.from(0)}
+            campaignID={selectedCampaign.campaignId || "0"}
+            donationTableData={[]}
+            Description={selectedCampaign.description || "null"}
+            socialLink={"/"}
             title={selectedCampaign.title || "null"}
-            progress={selectedCampaign.progress || 50}
-            BgImage={selectedCampaign.bgImage}
+            BgImage={selectedCampaign.coverImage}
           />
         )}
       </Drawer>
-
-      {/* <Drawer
-        open={openDrawer}
-        onClose={handleDrawerClose}
-        anchor="right"
-        disableEnforceFocus
-      >
-        <DrawerContent
-          handleDonationOpen={handleDonationOpen}
-          handleDrawerClose={handleDrawerClose}
-          raisedValue=""
-          GoalValue=""
-          LeftValue=""
-          donationTableData={donationTableData}
-          Description=""
-          socialLink=""
-          title=""
-          progress={50}
-          BgImage={c3}
-        />
-      </Drawer> */}
 
       <div className="mt-4">
         <TabsComponent
@@ -351,6 +412,7 @@ const Home: NextPage = () => {
           component1={
             <CampaignCardContainer
               campaignsList={campaignsList}
+              progress={progress}
               handlePopUp={handleDonationOpen}
               handleDrawer={handleDrawerOpen}
             />
