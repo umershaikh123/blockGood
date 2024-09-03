@@ -59,7 +59,7 @@ interface DrawerContentProps {
   handleDrawerClose: any
   handleDonationOpen: (campaignID: string) => void
   title: string
-  progress: number
+
   raisedValue: BigNumber
   GoalValue: BigNumber
   LeftValue: BigNumber
@@ -74,7 +74,7 @@ function DrawerContent({
   handleDrawerClose,
   handleDonationOpen,
   title,
-  progress,
+
   raisedValue,
   GoalValue,
   LeftValue,
@@ -84,11 +84,12 @@ function DrawerContent({
   BgImage,
   campaignID,
 }: DrawerContentProps) {
-  // const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
-  // const handleDonationClose = () => {
-  //   setDonationPopUpOpen(false)
-  // }
-  // const { chain: networkChain } = useAccount()
+  // const [progress, setProgress] = React.useState(0)
+
+  const progress = calculateCampaignProgress({
+    raisedValue: raisedValue,
+    goalValue: GoalValue,
+  })
 
   return (
     <Box
@@ -269,7 +270,7 @@ const Home: NextPage = () => {
   }
 
   const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
-  const [progress, setProgress] = React.useState(0)
+
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
     null
   )
@@ -331,13 +332,13 @@ const Home: NextPage = () => {
       fetchCampaignDetails()
     }
 
-    if (selectedCampaign) {
-      const raisedValue =
-        BigNumber.from(selectedCampaign.raised) || BigNumber.from(0)
-      const goalValue =
-        BigNumber.from(selectedCampaign.goal) || BigNumber.from(0)
-      setProgress(calculateCampaignProgress({ raisedValue, goalValue }))
-    }
+    // if (selectedCampaign) {
+    //   const raisedValue =
+    //     BigNumber.from(selectedCampaign.raised) || BigNumber.from(0)
+    //   const goalValue =
+    //     BigNumber.from(selectedCampaign.goal) || BigNumber.from(0)
+    //   setProgress(calculateCampaignProgress({ raisedValue, goalValue }))
+    // }
   }, [data, networkChain, selectedCampaign])
 
   if (loading)
@@ -490,7 +491,6 @@ const Home: NextPage = () => {
             GoalValue={
               BigNumber.from(selectedCampaign.goal) || BigNumber.from(0)
             }
-            progress={progress}
             LeftValue={BigNumber.from(0)}
             campaignID={selectedCampaign.campaignId || "0"}
             donationTableData={[]}
@@ -508,7 +508,6 @@ const Home: NextPage = () => {
           component1={
             <CampaignCardContainer
               campaignsList={campaignsList}
-              progress={progress}
               handlePopUp={handleDonationOpen}
               handleDrawer={handleDrawerOpen}
             />

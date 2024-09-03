@@ -5,6 +5,7 @@ import ProgressBar from "./ProgressBar"
 import { Button } from "@mui/material"
 import { CampaignCardPropsType, CampaignType } from "../../types/campaign"
 import { BigNumber } from "ethers"
+import { calculateCampaignProgress } from "../../util"
 export interface StatCardPropsType {
   raisedValue: BigNumber
   GoalValue: BigNumber
@@ -99,11 +100,16 @@ export const CampaignCard = ({
   title,
   raisedValue,
   GoalValue,
-  progress,
+
   handleClick,
   handleDrawer,
 }: CampaignCardPropsType) => {
   // const leftValue = raisedValue - GoalValue
+
+  const progress = calculateCampaignProgress({
+    raisedValue: raisedValue,
+    goalValue: GoalValue,
+  })
 
   console.log("statcard values", { raisedValue, GoalValue })
 
@@ -167,12 +173,10 @@ export const CampaignCardContainer = ({
   campaignsList,
   handlePopUp,
   handleDrawer,
-  progress,
 }: {
   campaignsList: CampaignType[]
   handlePopUp: any
   handleDrawer: any
-  progress: number
 }) => {
   return (
     <>
@@ -185,7 +189,6 @@ export const CampaignCardContainer = ({
             raisedValue={campaign.raised}
             GoalValue={campaign.goal}
             handleClick={() => handlePopUp(campaign.campaignId)}
-            progress={progress}
             handleDrawer={() => handleDrawer(campaign)}
           />
         ))}
