@@ -35,6 +35,7 @@ import { ethers } from "ethers"
 import { useAccount } from "wagmi"
 import { calculateCampaignProgress } from "../util"
 import { BigNumber } from "ethers"
+import { ThreeDots } from "react-loader-spinner"
 const drawerTabsProps = [
   {
     label: "Details",
@@ -330,7 +331,21 @@ const Home: NextPage = () => {
     }
   }, [data, networkChain, selectedCampaign])
 
-  if (loading) return <p>Loading...</p>
+  if (loading)
+    return (
+      <div>
+        <ThreeDots
+          visible={true}
+          height="80"
+          width="80"
+          color="var(--secondary)"
+          radius="9"
+          ariaLabel="three-dots-loading"
+          wrapperStyle={{}}
+          wrapperClass=""
+        />
+      </div>
+    )
   if (error) return <p>Error : {error.message}</p>
 
   const handleDonationClose = () => {
