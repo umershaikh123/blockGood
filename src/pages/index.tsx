@@ -29,13 +29,17 @@ import { donationTableData } from "../constants/tableData"
 import { useQuery } from "@apollo/client"
 import { GET_CAMPAIGN_IDS } from "../util/Queries"
 import { CampaignType } from "../types/campaign"
-import { getContractAddress } from "../constants/chainConfig"
+import { chainConfigs, getContractAddress } from "../constants/chainConfig"
 import donationTrackerAbi from "../contracts/abis/donationTracker.json"
 import { ethers } from "ethers"
 import { useAccount } from "wagmi"
 import { calculateCampaignProgress } from "../util"
 import { BigNumber } from "ethers"
 import { ThreeDots } from "react-loader-spinner"
+import { toast, ToastContainer } from "react-toastify"
+import { ToastIcon } from "react-toastify/dist/types"
+import "react-toastify/dist/ReactToastify.css"
+
 const drawerTabsProps = [
   {
     label: "Details",
@@ -53,7 +57,7 @@ const drawerTabsProps = [
 
 interface DrawerContentProps {
   handleDrawerClose: any
-  handleDonationOpen: () => void
+  handleDonationOpen: (campaignID: string) => void
   title: string
   progress: number
   raisedValue: BigNumber
@@ -80,6 +84,12 @@ function DrawerContent({
   BgImage,
   campaignID,
 }: DrawerContentProps) {
+  // const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
+  // const handleDonationClose = () => {
+  //   setDonationPopUpOpen(false)
+  // }
+  // const { chain: networkChain } = useAccount()
+
   return (
     <Box
       sx={{ width: "48rem", borderRadius: "5rem", padding: "1rem" }}
@@ -159,9 +169,7 @@ function DrawerContent({
                 border: "2px solid var(--secondary)",
               },
             }}
-            onClick={event => {
-              handleDonationOpen()
-            }}
+            onClick={() => handleDonationOpen(campaignID)}
           >
             Donate
           </Button>
@@ -270,6 +278,7 @@ const Home: NextPage = () => {
   const { chain: networkChain } = useAccount()
   const { loading, error, data } = useQuery(GET_CAMPAIGN_IDS)
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
+  const [currentCampaignID, setCurrentCampaignID] = React.useState("")
 
   useEffect(() => {
     const fetchCampaignDetails = async () => {
@@ -351,7 +360,9 @@ const Home: NextPage = () => {
   const handleDonationClose = () => {
     setDonationPopUpOpen(false)
   }
-  const handleDonationOpen = () => {
+  const handleDonationOpen = (CampaignID: string) => {
+    // set campaignID
+    setCurrentCampaignID(CampaignID)
     setDonationPopUpOpen(true)
   }
 
@@ -372,6 +383,73 @@ const Home: NextPage = () => {
     setSelectedCampaign(null)
   }
 
+  const handleDonate = async (amount: number) => {
+    console.log("campaign ID", currentCampaignID)
+    console.log("donation amount", amount)
+    const pendingToastId = toast.loading("Transaction Pending...")
+    try {
+      if (!amount || amount <= 0) {
+        alert("Please enter a valid donation amount.")
+        return
+      }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+
+      const contractAddress =
+        chainConfigs[networkChain?.id || 11155111].contractAddress
+      const donationContract = new ethers.Contract(
+        contractAddress,
+        donationTrackerAbi,
+        provider
+      )
+
+      const ContractSigner = donationContract.connect(signer)
+      const tx = await ContractSigner.donate(currentCampaignID, {
+        value: ethers.utils.parseEther(amount.toString()),
+      })
+
+      const receipt = await tx.wait()
+      toast.update(pendingToastId, {
+        render: "Registration Successful!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+      })
+
+      toast.info(
+        <div>
+          View{" "}
+          <a
+            href={`${
+              chainConfigs[networkChain?.id || 11155111].blockExplorers.default
+                .url
+            }/tx/${receipt.transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--secondary)", textDecoration: "underline" }}
+          >
+            Tx
+          </a>
+        </div>,
+        {
+          autoClose: 7000,
+        }
+      )
+
+      setDonationPopUpOpen(false)
+    } catch (error: any) {
+      console.error("Donation failed", error)
+      toast.update(pendingToastId, {
+        render: `Transaction Failed`,
+        type: "error",
+        icon: "❌" as unknown as ToastIcon,
+        autoClose: 5000,
+        isLoading: false,
+      })
+    }
+  }
+
   return (
     <div className="flex flex-col relative ">
       <h1 className=" text-3xl text-[var(--secondary)]   font-bold">
@@ -382,7 +460,10 @@ const Home: NextPage = () => {
         open={donationPopUpOpen}
         onClick={handleDonationClose}
       >
-        <DonationPopup handleClose={handleDonationClose} />
+        <DonationPopup
+          handleClose={handleDonationClose}
+          handleDonate={handleDonate}
+        />
       </Backdrop>
 
       <Backdrop

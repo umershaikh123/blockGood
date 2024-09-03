@@ -184,7 +184,7 @@ export const CampaignCardContainer = ({
             title={campaign.title}
             raisedValue={campaign.raised}
             GoalValue={campaign.goal}
-            handleClick={handlePopUp}
+            handleClick={() => handlePopUp(campaign.campaignId)}
             progress={progress}
             handleDrawer={() => handleDrawer(campaign)}
           />

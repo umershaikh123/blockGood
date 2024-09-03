@@ -22,7 +22,20 @@ import { useAccount } from "wagmi"
 import { donatationTracker_contractAddresses } from "../../constants/contracts"
 import { uploadImageToIPFS } from "../../util/ipfs"
 
-const DonationPopup = ({ handleClose }: { handleClose: () => void }) => {
+const DonationPopup = ({
+  handleClose,
+  handleDonate,
+}: {
+  handleClose: () => void
+  handleDonate: any
+}) => {
+  const [amount, setAmount] = React.useState("0")
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target
+    console.log("amount", amount)
+    setAmount(value)
+  }
   return (
     <div onClick={event => event.stopPropagation()}>
       <div className="flex flex-col w-[26rem] h-[20rem] bg-[var(--Bg)] rounded-xl justify-evenly items-center relative">
@@ -45,6 +58,8 @@ const DonationPopup = ({ handleClose }: { handleClose: () => void }) => {
         <TextField
           type="number"
           label="Amount"
+          onChange={handleInputChange}
+          value={amount}
           placeholder="Enter Donation amount..."
           InputProps={{
             inputProps: { step: "0.01" },
@@ -91,6 +106,7 @@ const DonationPopup = ({ handleClose }: { handleClose: () => void }) => {
             fontWeight: 500,
             borderRadius: "0.3rem",
           }}
+          onClick={() => handleDonate(amount)}
         >
           Donate
         </Button>
@@ -151,6 +167,7 @@ export const RegisterIndividualPopup = ({
       return
     }
 
+    const pendingToastId = toast.loading("Transaction Pending...")
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
@@ -162,8 +179,6 @@ export const RegisterIndividualPopup = ({
         donationTrackerAbi,
         provider
       )
-
-      const pendingToastId = toast.loading("Transaction Pending...")
 
       const ContractSigner = donationContract.connect(signer)
 
@@ -178,7 +193,7 @@ export const RegisterIndividualPopup = ({
         phoneNumber
       )
 
-      await tx.wait()
+      const receipt = await tx.wait()
 
       toast.update(pendingToastId, {
         render: "Registration Successful!",
@@ -186,10 +201,36 @@ export const RegisterIndividualPopup = ({
         isLoading: false,
         autoClose: 5000,
       })
+
+      toast.info(
+        <div>
+          View{" "}
+          <a
+            href={`${
+              chainConfigs[networkChain?.id || 11155111].blockExplorers.default
+                .url
+            }/tx/${receipt.transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--secondary)", textDecoration: "underline" }}
+          >
+            Tx
+          </a>
+        </div>,
+        {
+          autoClose: 7000,
+        }
+      )
     } catch (error: any) {
       console.error("Error during registration:", error)
 
-      toast.error("Registration Failed: " + (error.message || "Unknown Error"))
+      toast.update(pendingToastId, {
+        render: `Transaction Failed`,
+        type: "error",
+        icon: "❌" as unknown as ToastIcon,
+        autoClose: 5000,
+        isLoading: false,
+      })
     }
   }
 
@@ -687,6 +728,27 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         autoClose: 5000,
         isLoading: false,
       })
+
+      toast.info(
+        <div>
+          View{" "}
+          <a
+            href={`${
+              chainConfigs[networkChain?.id || 11155111].blockExplorers.default
+                .url
+            }/tx/${receipt.transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--secondary)", textDecoration: "underline" }}
+          >
+            Tx
+          </a>
+        </div>,
+        {
+          autoClose: 7000,
+        }
+      )
+
       handleClose()
     } catch (error: any) {
       console.error("Error creating campaign:", error)

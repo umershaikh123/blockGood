@@ -110,13 +110,13 @@ import "react-toastify/dist/ReactToastify.css"
 //         return false
 //       }
 //     } catch (error: any) {
-//       toast.update(pendingToastId, {
-//         render: `Transaction Failed`,
-//         type: "error",
-//         icon: "❌" as unknown as ToastIcon,
-//         autoClose: 5000,
-//         isLoading: false,
-//       })
+//   toast.update(pendingToastId, {
+//     render: `Transaction Failed`,
+//     type: "error",
+//     icon: "❌" as unknown as ToastIcon,
+//     autoClose: 5000,
+//     isLoading: false,
+//   })
 //     } finally {
 //       setTimeout(() => {
 //         setSmartContractCalled(true)
