@@ -10,22 +10,22 @@ contracts:
       - event: ProofUploaded(uint256 campaignId, uint256 withdrawalId, string proofUrl)
       - event: WithdrawalMade(uint256 campaignId, address indexed admin, uint256 amount)
 networks:
-  - id: 31
-    rpc_config:
-      url: https://public-node.testnet.rsk.co
-    start_block: 0
-    contracts:
-      - name: DonationTracker
-        address:
-          - 0x75240BC94E70F6d459C374cA674477A96b037529
-  - id: 2810
-    rpc_config:
-      url: https://rpc-quicknode-holesky.morphl2.io
-    start_block: 0
-    contracts:
-      - name: DonationTracker
-        address:
-          - 0x9ABc61d3ee74B5F8affe77cBBC99ea8054D51Cb9
+  # - id: 31
+  #   rpc_config:
+  #     url: https://public-node.testnet.rsk.co
+  #   start_block: 0
+  #   contracts:
+  #     - name: DonationTracker
+  #       address:
+  #         - 0x75240BC94E70F6d459C374cA674477A96b037529
+  # - id: 2810
+  #   rpc_config:
+  #     url: https://rpc-quicknode-holesky.morphl2.io
+  #   start_block: 0
+  #   contracts:
+  #     - name: DonationTracker
+  #       address:
+  #         - 0x9ABc61d3ee74B5F8affe77cBBC99ea8054D51Cb9
   - id: 11155111
     start_block: 0
     contracts:
