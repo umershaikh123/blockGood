@@ -1,101 +1,118 @@
 export interface NativeCurrency {
-  decimals: number;
-  name: string;
-  symbol: string;
+  decimals: number
+  name: string
+  symbol: string
 }
 
 export interface RpcUrls {
-  default: { http: string[] };
-  public: { http: string[] };
+  default: { http: string[] }
+  public: { http: string[] }
 }
 
 export interface BlockExplorer {
-  name: string;
-  url: string;
+  name: string
+  url: string
 }
 
 export interface ChainConfig {
-  id: number;
-  name: string;
-  network: string;
-  nativeCurrency: NativeCurrency;
-  rpcUrls: RpcUrls;
+  id: number
+  name: string
+  network: string
+  nativeCurrency: NativeCurrency
+  rpcUrls: RpcUrls
   blockExplorers: {
-    default: BlockExplorer;
-  };
-  testnet: boolean;
-  contractAddress: string;
+    default: BlockExplorer
+  }
+  testnet: boolean
+  contractAddress: string
 }
 
 export const chainConfigs: { [key: number]: ChainConfig } = {
   11155111: {
     id: 11155111,
-    name: 'Sepolia',
-    network: 'sepolia',
+    name: "Sepolia",
+    network: "sepolia",
     nativeCurrency: {
       decimals: 18,
-      name: 'Sepolia Ether',
-      symbol: 'SEP',
+      name: "Sepolia Ether",
+      symbol: "SEP",
     },
     rpcUrls: {
       default: {
-        http: ['https://rpc.sepolia.org'],
+        http: [
+          `${
+            process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || "https://rpc.sepolia.org"
+          }`,
+        ],
       },
       public: {
-        http: ['https://rpc.sepolia.org'],
+        http: [
+          `${
+            process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || "https://rpc.sepolia.org"
+          }`,
+        ],
       },
     },
     blockExplorers: {
-      default: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
+      default: {
+        name: "Sepolia Etherscan",
+        url: "https://sepolia.etherscan.io",
+      },
     },
     testnet: true,
-    contractAddress: '0x7167C5B16dA69Ba6C0Ba00710Bd828B552486bD9',
+    contractAddress: "0x7167C5B16dA69Ba6C0Ba00710Bd828B552486bD9",
   },
   31: {
     id: 31,
-    name: 'Rootstock Testnet',
-    network: 'rootstock-testnet',
+    name: "Rootstock Testnet",
+    network: "rootstock-testnet",
     nativeCurrency: {
       decimals: 18,
-      name: 'Rootstock Testnet BTC',
-      symbol: 'tRBTC',
+      name: "Rootstock Testnet BTC",
+      symbol: "tRBTC",
     },
     rpcUrls: {
       default: {
-        http: ['https://public-node.testnet.rsk.co'],
+        http: ["https://public-node.testnet.rsk.co"],
       },
       public: {
-        http: ['https://public-node.testnet.rsk.co'],
+        http: ["https://public-node.testnet.rsk.co"],
       },
     },
     blockExplorers: {
-      default: { name: 'RSK Testnet Explorer', url: 'https://explorer.testnet.rsk.co' },
+      default: {
+        name: "RSK Testnet Explorer",
+        url: "https://explorer.testnet.rsk.co",
+      },
     },
     testnet: true,
-    contractAddress: '0x1234567890123456789012345678901234567890', // Replace with actual contract address
+    contractAddress: "0x1234567890123456789012345678901234567890",
   },
   1337: {
-    id: 1337,  // Replace with the actual chain ID for Morph Holesky
-    name: 'Morph Holesky',
-    network: 'morph-holesky',
+    id: 1337,
+    name: "Morph Holesky",
+    network: "morph-holesky",
     nativeCurrency: {
       decimals: 18,
-      name: 'Morph Holesky ETH',
-      symbol: 'mHETH',
+      name: "Morph Holesky ETH",
+      symbol: "mHETH",
     },
     rpcUrls: {
       default: {
-        http: ['https://rpc-url-for-morph-holesky.example'], // Replace with actual RPC URL
+        http: ["https://rpc-quicknode-holesky.morphl2.io"],
       },
       public: {
-        http: ['https://rpc-url-for-morph-holesky.example'], // Replace with actual RPC URL
+        http: ["https://rpc-quicknode-holesky.morphl2.io"],
       },
     },
     blockExplorers: {
-      default: { name: 'Morph Holesky Explorer', url: 'https://explorer-url-for-morph-holesky.example' }, // Replace with actual explorer URL
+      default: {
+        name: "Morph Holesky Explorer",
+        url: "https://explorer-holesky.morphl2.io",
+      },
     },
     testnet: true,
-    contractAddress: '0x9876543210987654321098765432109876543210', // Replace with actual contract address
+    contractAddress: "0x9876543210987654321098765432109876543210",
   },
 }
 
