@@ -911,12 +911,12 @@
       },
       {
         "internalType": "string",
-        "name": "medicalCondition",
+        "name": "Condition",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "requiredTreatment",
+        "name": "moreDetails",
         "type": "string"
       },
       {
