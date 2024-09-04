@@ -388,7 +388,7 @@ const Home: NextPage = () => {
     console.log("campaign ID", currentCampaignID)
     console.log("donation amount", amount)
     if (!amount || amount <= 0) {
-      alert("Please enter a valid donation amount.")
+      toast.error("Please enter a valid donation amount.")
       return
     }
     const pendingToastId = toast.loading("Transaction Pending...")

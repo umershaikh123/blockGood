@@ -4,6 +4,7 @@ import type { NextPage } from "next"
 import { useAccount, useWalletClient } from "wagmi"
 import { EvmChains, SignProtocolClient, SpMode } from "@ethsign/sp-sdk"
 import { parseEther, formatEther } from "viem"
+import { toast } from "react-toastify"
 
 interface Attestation {
   id: string
@@ -59,7 +60,8 @@ const AttestationPage: NextPage = () => {
       }
     } catch (error) {
       console.error("Error querying attestations:", error)
-      alert("Failed to query attestations. Check console for details.")
+
+      toast.error("Failed to query attestations. Check console for details.")
     } finally {
       setLoading(false)
       console.log("queryAttestations completed")
@@ -73,12 +75,12 @@ const AttestationPage: NextPage = () => {
   const createAttestation = async () => {
     console.log("createAttestation started")
     if (!address) {
-      alert("Please connect your wallet first.")
+      toast.error("Please connect your wallet first.")
       return
     }
 
     if (!campaignId || !amount) {
-      alert("Please enter both campaign ID and amount.")
+      toast.error("Please enter both campaign ID and amount.")
       return
     }
 
@@ -101,7 +103,8 @@ const AttestationPage: NextPage = () => {
       })
 
       console.log("Attestation created:", attestationResult)
-      alert(
+
+      toast.success(
         `Donation attestation created successfully! ID: ${attestationResult.attestationId}`
       )
       setCampaignId("")
@@ -110,7 +113,8 @@ const AttestationPage: NextPage = () => {
       await queryAttestations()
     } catch (error) {
       console.error("Error creating attestation:", error)
-      alert("Failed to create attestation. Check console for details.")
+
+      toast.error("Failed to create attestation. Check console for details.")
     } finally {
       setLoading(false)
     }
