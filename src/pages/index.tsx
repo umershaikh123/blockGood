@@ -29,7 +29,11 @@ import { donationTableData } from "../constants/tableData"
 import { useQuery } from "@apollo/client"
 import { GET_CAMPAIGN_IDS } from "../util/Queries"
 import { CampaignType } from "../types/campaign"
-import { chainConfigs, getContractAddress } from "../constants/chainConfig"
+import {
+  chainConfigs,
+  getChainConfig,
+  getContractAddress,
+} from "../constants/chainConfig"
 import donationTrackerAbi from "../contracts/abis/donationTracker.json"
 import { ethers } from "ethers"
 import { useAccount } from "wagmi"
@@ -284,14 +288,24 @@ const Home: NextPage = () => {
   useEffect(() => {
     const fetchCampaignDetails = async () => {
       try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
-        const signer = provider.getSigner()
-        const contractAddress = getContractAddress(networkChain?.id || 11155111)
+        const chainConfig = getChainConfig(networkChain?.id || 11155111)
+        const provider = new ethers.providers.JsonRpcProvider(
+          chainConfig.rpcUrls.public.http[0]
+        )
+        const contractAddress = chainConfig.contractAddress
         const donationContract = new ethers.Contract(
           contractAddress,
           donationTrackerAbi,
           provider
         )
+        // const provider = new ethers.providers.Web3Provider(window.ethereum)
+
+        // const contractAddress = getContractAddress(networkChain?.id || 11155111)
+        // const donationContract = new ethers.Contract(
+        //   contractAddress,
+        //   donationTrackerAbi,
+        //   provider
+        // )
 
         const fetchedCampaigns: Campaign[] = []
 
