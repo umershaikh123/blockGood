@@ -36,14 +36,15 @@ import {
 } from "../constants/chainConfig"
 import donationTrackerAbi from "../contracts/abis/donationTracker.json"
 import { ethers } from "ethers"
-import { useAccount } from "wagmi"
+import { useAccount, useWalletClient } from "wagmi"
 import { calculateCampaignProgress } from "../util"
 import { BigNumber } from "ethers"
 import { ThreeDots } from "react-loader-spinner"
 import { toast, ToastContainer } from "react-toastify"
 import { ToastIcon } from "react-toastify/dist/types"
 import "react-toastify/dist/ReactToastify.css"
-
+import { EvmChains, SignProtocolClient, SpMode } from "@ethsign/sp-sdk"
+import { IndexService } from "@ethsign/sp-sdk"
 const drawerTabsProps = [
   {
     label: "Details",
@@ -93,22 +94,13 @@ function DrawerContent({
   const [tableData, setTableData] = useState(donationData)
   const donations = donationData?.DonationTracker_DonationReceived || []
   const formattedDonationData = donations
-    .filter((donation: any) => donation.campaignId === campaignID) // Filter by campaignID
+    .filter((donation: any) => donation.campaignId === campaignID)
     .map((donation: any) => ({
       address: donation.donor,
-      donation: ethers.utils.formatEther(donation.amount), // Convert from wei to ETH
+      donation: ethers.utils.formatEther(donation.amount),
     }))
   console.log("formattedDonationData", formattedDonationData)
 
-  // if (donationData) {
-  //   const formattedDonationData = donationData
-  //     .filter((donation: any) => donation.campaignId === campaignID)
-  //     .map((donation: any) => ({
-  //       address: donation.donor,
-  //       donation: ethers.utils.formatEther(donation.amount),
-  //     }))
-  //   setTableData(formattedDonationData)
-  // }
   const progress = calculateCampaignProgress({
     raisedValue: raisedValue,
     goalValue: GoalValue,
@@ -272,6 +264,18 @@ function DrawerContent({
   )
 }
 
+interface Attestation {
+  id: string
+  attester: string
+  attestTimestamp: string
+  data: {
+    campaignId?: string
+    donorAddress?: string
+    Amount?: string
+    timeStamp?: string
+  }
+}
+
 const Home: NextPage = () => {
   type Campaign = {
     campaignId: string
@@ -289,6 +293,12 @@ const Home: NextPage = () => {
     lastWithdrawalProofUploaded: boolean
     destinationChainSelector: number
   }
+
+  const { data: walletClient } = useWalletClient()
+
+  const [campaignId, setCampaignId] = useState("")
+  const [amount, setAmount] = useState("")
+  const [attestations, setAttestations] = useState<Attestation[]>([])
 
   const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
 
@@ -444,6 +454,12 @@ const Home: NextPage = () => {
       )
 
       const ContractSigner = donationContract.connect(signer)
+      const client = new SignProtocolClient(SpMode.OnChain, {
+        chain: EvmChains.sepolia,
+        walletClient: walletClient!,
+      })
+
+      toast.info("Sending Donation ...")
       const tx = await ContractSigner.donate(currentCampaignID, {
         value: ethers.utils.parseEther(amount.toString()),
       })
@@ -475,6 +491,20 @@ const Home: NextPage = () => {
           autoClose: 7000,
         }
       )
+
+      toast.info("Creating Attestation ...")
+      const attestationResult = await client.createAttestation({
+        schemaId: "0x6a",
+        data: {
+          campaignId: currentCampaignID,
+          donorAddress: address,
+          Amount: ethers.utils.parseEther(amount.toString()),
+          timeStamp: new Date().toISOString(),
+        },
+        indexingValue: address?.toLowerCase() || "0x",
+      })
+
+      console.log("Attestation created:", attestationResult)
 
       setDonationPopUpOpen(false)
     } catch (error: any) {

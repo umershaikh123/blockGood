@@ -3,8 +3,12 @@ import { ConnectButton } from "@rainbow-me/rainbowkit"
 import type { NextPage } from "next"
 import { useAccount, useWalletClient } from "wagmi"
 import { EvmChains, SignProtocolClient, SpMode } from "@ethsign/sp-sdk"
+import { IndexService } from "@ethsign/sp-sdk"
 import { parseEther, formatEther } from "viem"
 import { toast } from "react-toastify"
+import { AttestationTable } from "../Components/Common/Table"
+import { ethers } from "ethers"
+import { ThreeDots } from "react-loader-spinner"
 
 interface Attestation {
   id: string
@@ -27,14 +31,51 @@ const AttestationPage: NextPage = () => {
   const [attestations, setAttestations] = useState<Attestation[]>([])
 
   const queryAttestations = async () => {
-    console.log("Starting queryAttestations")
     setLoading(true)
     try {
+      const indexService = new IndexService("testnet")
+      // const res = await indexService.querySchemaList({
+      //   id: "onchain_evm_11155111_0x6a",
+      //   mode: "onchain",
+      //   page: 1,
+      //   size: 100,
+      // })
+
+      const res = await indexService.queryAttestationList({
+        id: "",
+        schemaId: "onchain_evm_11155111_0x6a",
+        attester: "",
+        page: 1,
+        mode: "onchain",
+        indexingValue: "",
+      })
+
+      console.log("res", res)
+      // const abi = [
+      //   "tuple(string campaignId, address donorAddress, uint256 Amount, string timeStamp)",
+      // ]
+
+      // // Encoded data (the one you want to decode)
+      // const Data =
+      //   "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000033232320000000000000000000000000000000000000000000000000000000000"
+
+      // // Define the type array for decoding
+      // const types = ["string", "address", "uint256", "string"]
+
+      // // Decode the data
+      // const decodedData = ethers.utils.defaultAbiCoder.decode(types, Data)
+
+      // console.log("DECODED DATA ", {
+      //   campaignId: decodedData.campaignId,
+      //   donorAddress: decodedData.donorAddress,
+      //   Amount: ethers.utils.formatEther(decodedData.Amount), // Convert Amount from wei to ETH
+      //   timeStamp: decodedData.timeStamp,
+      // })
+
       const url = `https://testnet-rpc.sign.global/api/scan/attestations?schemaId=onchain_evm_11155111_0x6a&size=100`
-      console.log("Fetching from URL:", url)
       const response = await fetch(url)
       const data = await response.json()
-      console.log("Received data:", data)
+
       if (data.success) {
         const formattedAttestations = data.data.rows.map((row: any) => {
           let parsedData = {}
@@ -52,7 +93,6 @@ const AttestationPage: NextPage = () => {
             data: parsedData,
           }
         })
-        console.log("Formatted attestations:", formattedAttestations)
         setAttestations(formattedAttestations)
       } else {
         console.error("API request was not successful:", data.message)
@@ -60,11 +100,9 @@ const AttestationPage: NextPage = () => {
       }
     } catch (error) {
       console.error("Error querying attestations:", error)
-
       toast.error("Failed to query attestations. Check console for details.")
     } finally {
       setLoading(false)
-      console.log("queryAttestations completed")
     }
   }
 
@@ -126,7 +164,7 @@ const AttestationPage: NextPage = () => {
         Donation Tracker
       </h1>
 
-      <div className="mt-4">
+      {/* <div className="mt-4">
         <input
           type="text"
           placeholder="Campaign ID"
@@ -147,52 +185,28 @@ const AttestationPage: NextPage = () => {
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
         >
           {loading ? "Creating Attestation..." : "Create Donation Attestation"}
-        </button>
-      </div>
+        </button> 
+      </div>*/}
 
-      {attestations.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-2xl font-semibold mb-4">Attestations</h2>
-          <ul>
-            {attestations.map(attestation => (
-              <li key={attestation.id} className="mb-4 p-4 border rounded">
-                <p>
-                  <strong>ID:</strong> {attestation.id}
-                </p>
-                <p>
-                  <strong>Attester:</strong> {attestation.attester}
-                </p>
-                <p>
-                  <strong>Timestamp:</strong> {attestation.attestTimestamp}
-                </p>
-                {attestation.data.campaignId && (
-                  <p>
-                    <strong>Campaign ID:</strong> {attestation.data.campaignId}
-                  </p>
-                )}
-                {attestation.data.donorAddress && (
-                  <p>
-                    <strong>Donor Address:</strong>{" "}
-                    {attestation.data.donorAddress}
-                  </p>
-                )}
-                {attestation.data.Amount && (
-                  <p>
-                    <strong>Amount:</strong>{" "}
-                    {formatEther(BigInt(attestation.data.Amount))} ETH
-                  </p>
-                )}
-                {attestation.data.timeStamp && (
-                  <p>
-                    <strong>Donation Time:</strong>{" "}
-                    {new Date(attestation.data.timeStamp).toLocaleString()}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div>
+        {loading ? (
+          <div>
+            {" "}
+            <ThreeDots
+              visible={true}
+              height="80"
+              width="80"
+              color="var(--secondary)"
+              radius="9"
+              ariaLabel="three-dots-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
+        ) : (
+          <AttestationTable tableData={attestations} />
+        )}
+      </div>
     </div>
   )
 }

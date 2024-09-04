@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { donationTableDataType } from "../../constants/tableData"
-
+import { ethers } from "ethers"
 const DonationHistoryTable = ({
   tableData,
 }: {
@@ -82,3 +82,105 @@ const DonationHistoryTable = ({
 }
 
 export default DonationHistoryTable
+
+interface Attestation {
+  id: string
+  attester: string
+  attestTimestamp: string
+  data: {
+    campaignId?: string
+    donorAddress?: string
+    Amount?: string
+    timeStamp?: string
+  }
+}
+
+interface AttestationTableProps {
+  tableData: Attestation[]
+}
+
+export const AttestationTable: React.FC<AttestationTableProps> = ({
+  tableData,
+}) => {
+  const [currentPage, setCurrentPage] = useState(1)
+  const totalPages = Math.ceil(tableData.length / 5)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const displayedData = tableData.slice((currentPage - 1) * 7, currentPage * 7)
+
+  return (
+    <div className="w-full max-w-[70vw] mx-auto p-4 min-h-[47vh]">
+      {/* Table */}
+      <div className="overflow-x-auto shadow-sm">
+        <table
+          className="min-w-full border-2 border-[var(--secondary)]"
+          style={{ borderSpacing: "0" }}
+        >
+          <thead>
+            <tr className="bg-[var(--Bg)] text-[var(--primary)]">
+              <th className="px-6 py-4 text-left">Attester</th>
+              <th className="px-6 py-4 text-left">Timestamp</th>
+              <th className="px-6 py-4 text-left">Campaign ID</th>
+
+              <th className="px-6 py-4 text-left">Amount (ETH)</th>
+            </tr>
+          </thead>
+          <tbody className="bg-[var(--Bg)] text-[var(--secondary)] font-medium">
+            {displayedData.map((attestation, index) => (
+              <tr
+                key={index}
+                className="border-t border-[var(--primary)] font-bold"
+              >
+                <td className="px-6 py-4">{attestation.attester}</td>
+                <td className="px-6 py-4">{attestation.attestTimestamp}</td>
+                <td className="px-6 py-4">
+                  {attestation.data.campaignId || "N/A"}
+                </td>
+
+                <td className="px-6 py-4">
+                  {attestation.data.Amount
+                    ? ethers.utils.formatEther(attestation.data.Amount)
+                    : "N/A"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center mt-4 space-x-2">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded-full text-[var(--primary)]"
+        >
+          {"<"}
+        </button>
+        {Array.from({ length: totalPages }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => handlePageChange(index + 1)}
+            className={`px-3 py-1 rounded-full ${
+              currentPage === index + 1
+                ? "bg-[var(--primary)] text-white"
+                : "text-[var(--primary)]"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded-full text-[var(--primary)]"
+        >
+          {">"}
+        </button>
+      </div>
+    </div>
+  )
+}
