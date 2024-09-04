@@ -281,12 +281,14 @@ const Home: NextPage = () => {
   const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { chain: networkChain } = useAccount()
-  const { loading, error, data } = useQuery(GET_CAMPAIGN_IDS)
+  const { error, data } = useQuery(GET_CAMPAIGN_IDS)
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [currentCampaignID, setCurrentCampaignID] = React.useState("")
 
   useEffect(() => {
     const fetchCampaignDetails = async () => {
+      setLoading(true)
       try {
         const chainConfig = getChainConfig(networkChain?.id || 11155111)
         const provider = new ethers.providers.JsonRpcProvider(
@@ -298,14 +300,6 @@ const Home: NextPage = () => {
           donationTrackerAbi,
           provider
         )
-        // const provider = new ethers.providers.Web3Provider(window.ethereum)
-
-        // const contractAddress = getContractAddress(networkChain?.id || 11155111)
-        // const donationContract = new ethers.Contract(
-        //   contractAddress,
-        //   donationTrackerAbi,
-        //   provider
-        // )
 
         const fetchedCampaigns: Campaign[] = []
 
@@ -338,26 +332,21 @@ const Home: NextPage = () => {
         setCampaignsList(fetchedCampaigns)
       } catch (error) {
         console.error("Error fetching campaign details:", error)
+      } finally {
+        setLoading(false)
       }
     }
 
     if (data) {
       console.log("data", data)
+
       fetchCampaignDetails()
     }
-
-    // if (selectedCampaign) {
-    //   const raisedValue =
-    //     BigNumber.from(selectedCampaign.raised) || BigNumber.from(0)
-    //   const goalValue =
-    //     BigNumber.from(selectedCampaign.goal) || BigNumber.from(0)
-    //   setProgress(calculateCampaignProgress({ raisedValue, goalValue }))
-    // }
   }, [data, networkChain, selectedCampaign])
 
-  if (loading)
+  if (loading === true)
     return (
-      <div>
+      <div className="h-[80vh] w-[90vw] flex justify-center items-center">
         <ThreeDots
           visible={true}
           height="80"

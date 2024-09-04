@@ -6,6 +6,10 @@ import { Button } from "@mui/material"
 import { CampaignCardPropsType, CampaignType } from "../../types/campaign"
 import { BigNumber } from "ethers"
 import { calculateCampaignProgress } from "../../util"
+import Fade from "@mui/material/Fade"
+import ToggleButton from "@mui/material/ToggleButton"
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
+
 export interface StatCardPropsType {
   raisedValue: BigNumber
   GoalValue: BigNumber
@@ -178,21 +182,87 @@ export const CampaignCardContainer = ({
   handlePopUp: any
   handleDrawer: any
 }) => {
+  const [selectedStatus, setSelectedStatus] = React.useState<string>("active")
+
+  // Handler for toggle button group
+  const handleStatusChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newStatus: string
+  ) => {
+    if (newStatus !== null) {
+      setSelectedStatus(newStatus)
+    }
+  }
+
+  // Filter campaigns based on selected status
+  const filteredCampaigns = campaignsList.filter(campaign =>
+    selectedStatus === "active" ? campaign.active : !campaign.active
+  )
+
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-3  xl:grid-cols-4 gap-4   w-[90vw]">
-        {campaignsList.map((campaign, index) => (
-          <CampaignCard
-            key={index}
-            bgImage={campaign.coverImage}
-            title={campaign.title}
-            raisedValue={campaign.raised}
-            GoalValue={campaign.goal}
-            handleClick={() => handlePopUp(campaign.campaignId)}
-            handleDrawer={() => handleDrawer(campaign)}
-          />
-        ))}
+      <div className="flex w-[89vw] justify-end">
+        {/* Toggle Button Group */}
+        <ToggleButtonGroup
+          value={selectedStatus}
+          exclusive
+          onChange={handleStatusChange}
+          aria-label="campaign status"
+        >
+          <ToggleButton
+            value="active"
+            aria-label="active campaigns"
+            sx={{
+              "&.Mui-selected": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focusVisible": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            }}
+          >
+            Active
+          </ToggleButton>
+          <ToggleButton
+            value="ended"
+            aria-label="ended campaigns"
+            sx={{
+              "&.Mui-selected": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focusVisible": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            }}
+          >
+            Ended
+          </ToggleButton>
+        </ToggleButtonGroup>
       </div>
+
+      <Fade in={true} timeout={500}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-[90vw]">
+          {filteredCampaigns.map((campaign, index) => (
+            <CampaignCard
+              key={index}
+              bgImage={campaign.coverImage}
+              title={campaign.title}
+              raisedValue={campaign.raised}
+              GoalValue={campaign.goal}
+              handleClick={() => handlePopUp(campaign.campaignId)}
+              handleDrawer={() => handleDrawer(campaign)}
+            />
+          ))}
+        </div>
+      </Fade>
     </>
   )
 }
