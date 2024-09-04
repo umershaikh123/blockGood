@@ -27,8 +27,8 @@ const DonationHistoryTable = ({
             <tr className="bg-[var(--Bg)] text-[var(--primary)] ">
               <th className="px-6 py-4 text-left">Address</th>
               <th className="px-6 py-4 text-left">Donation</th>
-              <th className="px-6 py-4 text-left">Chain</th>
-              <th className="px-6 py-4 text-left">Tx Hash</th>
+              {/* <th className="px-6 py-4 text-left">Chain</th> */}
+              {/* <th className="px-6 py-4 text-left">Tx Hash</th> */}
             </tr>
           </thead>
           <tbody className="bg-[var(--Bg)] text-[var(--secondary)]  font-medium">
@@ -39,8 +39,8 @@ const DonationHistoryTable = ({
               >
                 <td className="px-6 py-4">{item.address}</td>
                 <td className="px-6 py-4">{item.donation} ETH</td>
-                <td className="px-6 py-4">{item.chain}</td>
-                <td className="px-6 py-4">{item.txHash}</td>
+                {/* <td className="px-6 py-4">{item.chain}</td>
+                <td className="px-6 py-4">{item.txHash}</td> */}
               </tr>
             ))}
           </tbody>

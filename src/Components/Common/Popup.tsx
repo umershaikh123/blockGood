@@ -591,7 +591,7 @@ export const RegisterIndividualPopup = ({
 }
 
 export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
-  const { chain: networkChain, isConnected } = useAccount()
+  const { chain: networkChain, isConnected, address } = useAccount()
   const [requiredFee, setRequiredFee] = React.useState<string>("0")
   const [formValues, setFormValues] = useState({
     title: "",
@@ -603,7 +603,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
 
   useEffect(() => {
     const handleFee = async () => {
-      if (isConnected) {
+      if (isConnected && address) {
         const chainConfig = getChainConfig(networkChain?.id || 11155111)
         const provider = new ethers.providers.JsonRpcProvider(
           chainConfig.rpcUrls.public.http[0]
@@ -620,10 +620,8 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           provider
         )
 
-        // const address = (await signer.getAddress()) || "0x"
-
         const isIndividual = await donationContract.isRegisteredAsIndividual(
-          "0x8a770B7700f941Bb2E6Dd023AD3B22c2c41C5901"
+          address
         )
 
         const requiredFee = isIndividual

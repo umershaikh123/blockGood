@@ -27,7 +27,7 @@ import DonationHistoryTable from "../Components/Common/Table"
 import { donationTableData } from "../constants/tableData"
 // import { donationTableData } from "../constants/tableData"
 import { useQuery } from "@apollo/client"
-import { GET_CAMPAIGN_IDS } from "../util/Queries"
+import { GET_CAMPAIGN_IDS, GET_DONATION_RECIEVED } from "../util/Queries"
 import { CampaignType } from "../types/campaign"
 import {
   chainConfigs,
@@ -63,14 +63,15 @@ interface DrawerContentProps {
   handleDrawerClose: any
   handleDonationOpen: (campaignID: string) => void
   title: string
-
+  isIndividual: boolean
   raisedValue: BigNumber
   GoalValue: BigNumber
   LeftValue: BigNumber
   Description: string
-  donationTableData: any
+
   socialLink: string
   BgImage: string
+  donationData: any
   campaignID: string
 }
 
@@ -78,18 +79,36 @@ function DrawerContent({
   handleDrawerClose,
   handleDonationOpen,
   title,
-
+  isIndividual,
   raisedValue,
   GoalValue,
   LeftValue,
   Description,
-  donationTableData,
+
   socialLink,
   BgImage,
+  donationData,
   campaignID,
 }: DrawerContentProps) {
-  // const [progress, setProgress] = React.useState(0)
+  const [tableData, setTableData] = useState(donationData)
+  const donations = donationData?.DonationTracker_DonationReceived || []
+  const formattedDonationData = donations
+    .filter((donation: any) => donation.campaignId === campaignID) // Filter by campaignID
+    .map((donation: any) => ({
+      address: donation.donor,
+      donation: ethers.utils.formatEther(donation.amount), // Convert from wei to ETH
+    }))
+  console.log("formattedDonationData", formattedDonationData)
 
+  // if (donationData) {
+  //   const formattedDonationData = donationData
+  //     .filter((donation: any) => donation.campaignId === campaignID)
+  //     .map((donation: any) => ({
+  //       address: donation.donor,
+  //       donation: ethers.utils.formatEther(donation.amount),
+  //     }))
+  //   setTableData(formattedDonationData)
+  // }
   const progress = calculateCampaignProgress({
     raisedValue: raisedValue,
     goalValue: GoalValue,
@@ -237,10 +256,8 @@ function DrawerContent({
             }
             component2={
               <>
-                {campaignID && (
-                  <DonationHistoryTable
-                    tableData={donationTableData[campaignID] || []}
-                  />
+                {campaignID && formattedDonationData && (
+                  <DonationHistoryTable tableData={formattedDonationData} />
                 )}
               </>
             }
@@ -280,10 +297,14 @@ const Home: NextPage = () => {
   )
   const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
-  const { chain: networkChain } = useAccount()
+  const { chain: networkChain, address } = useAccount()
+
   const { error, data } = useQuery(GET_CAMPAIGN_IDS)
+  const { data: donationData } = useQuery(GET_DONATION_RECIEVED)
+
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [isIndividual, setIsIndividual] = useState<boolean>(false)
   const [currentCampaignID, setCurrentCampaignID] = React.useState("")
 
   useEffect(() => {
@@ -344,28 +365,12 @@ const Home: NextPage = () => {
     }
   }, [data, networkChain])
 
-  // if (loading === true)
-  // return (
-  //   <div className="h-[80vh] w-[90vw] flex justify-center items-center">
-  //     <ThreeDots
-  //       visible={true}
-  //       height="80"
-  //       width="80"
-  //       color="var(--secondary)"
-  //       radius="9"
-  //       ariaLabel="three-dots-loading"
-  //       wrapperStyle={{}}
-  //       wrapperClass=""
-  //     />
-  //   </div>
-  //   )
   if (error) return <p>Error : {error.message}</p>
 
   const handleDonationClose = () => {
     setDonationPopUpOpen(false)
   }
   const handleDonationOpen = (CampaignID: string) => {
-    // set campaignID
     setCurrentCampaignID(CampaignID)
     setDonationPopUpOpen(true)
   }
@@ -377,7 +382,38 @@ const Home: NextPage = () => {
     setCampaignPopUpOpen(true)
   }
 
+  const fetchIsIndividual = async (creatorAddress: string) => {
+    if (creatorAddress) {
+      const chainConfig = getChainConfig(networkChain?.id || 11155111)
+      const provider = new ethers.providers.JsonRpcProvider(
+        chainConfig.rpcUrls.public.http[0]
+      )
+      const contractAddress = chainConfig.contractAddress
+      const donationContract = new ethers.Contract(
+        contractAddress,
+        donationTrackerAbi,
+        provider
+      )
+
+      const isIndividual = await donationContract.isRegisteredAsIndividual(
+        creatorAddress
+      )
+      // const isOrganization = await donationContract.isRegisteredAsOrganization(
+      //   creatorAddress
+      // )
+
+      if (isIndividual) {
+        setIsIndividual(true)
+      } else {
+        setIsIndividual(false)
+      }
+    }
+  }
+
   const handleDrawerOpen = (campaign: Campaign) => {
+    // fetch is individual or campaign
+
+    fetchIsIndividual(campaign.creator)
     setSelectedCampaign(campaign)
     setOpenDrawer(true)
   }
@@ -485,6 +521,8 @@ const Home: NextPage = () => {
       >
         {selectedCampaign && (
           <DrawerContent
+            donationData={donationData}
+            isIndividual={isIndividual}
             handleDonationOpen={handleDonationOpen}
             handleDrawerClose={handleDrawerClose}
             raisedValue={
@@ -495,7 +533,6 @@ const Home: NextPage = () => {
             }
             LeftValue={BigNumber.from(0)}
             campaignID={selectedCampaign.campaignId || "0"}
-            donationTableData={[]}
             Description={selectedCampaign.description || "null"}
             socialLink={"/"}
             title={selectedCampaign.title || "null"}

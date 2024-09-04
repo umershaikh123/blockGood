@@ -9,3 +9,14 @@ export const GET_CAMPAIGN_IDS = gql`
     }
   }
 `
+
+export const GET_DONATION_RECIEVED = gql`
+  query MyQuery {
+    DonationTracker_DonationReceived {
+      amount
+      campaignId
+      db_write_timestamp
+      donor
+    }
+  }
+`

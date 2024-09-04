@@ -25,7 +25,7 @@ const Details = ({
       <p className=" text-[var(--secondary)] w-full   mt-4 leading-7 font-medium">
         {description}
       </p>
-
+      {/* 
       <div className="flex mt-[3rem] w-full justify-end items-center space-x-3">
         <Link href={xLink}>
           <XIcon sx={{ color: "var(--secondary)", fontSize: 35 }} />
@@ -38,7 +38,7 @@ const Details = ({
         <Link href={FaceBookLink}>
           <FacebookIcon sx={{ color: "var(--secondary)", fontSize: 35 }} />
         </Link>
-      </div>
+      </div> */}
     </div>
   )
 }
