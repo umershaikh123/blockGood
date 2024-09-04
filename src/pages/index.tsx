@@ -283,7 +283,7 @@ const Home: NextPage = () => {
   const { chain: networkChain } = useAccount()
   const { error, data } = useQuery(GET_CAMPAIGN_IDS)
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
-  const [loading, setLoading] = React.useState(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [currentCampaignID, setCurrentCampaignID] = React.useState("")
 
   useEffect(() => {
@@ -342,23 +342,23 @@ const Home: NextPage = () => {
 
       fetchCampaignDetails()
     }
-  }, [data, networkChain, selectedCampaign])
+  }, [data, networkChain])
 
-  if (loading === true)
-    return (
-      <div className="h-[80vh] w-[90vw] flex justify-center items-center">
-        <ThreeDots
-          visible={true}
-          height="80"
-          width="80"
-          color="var(--secondary)"
-          radius="9"
-          ariaLabel="three-dots-loading"
-          wrapperStyle={{}}
-          wrapperClass=""
-        />
-      </div>
-    )
+  // if (loading === true)
+  // return (
+  //   <div className="h-[80vh] w-[90vw] flex justify-center items-center">
+  //     <ThreeDots
+  //       visible={true}
+  //       height="80"
+  //       width="80"
+  //       color="var(--secondary)"
+  //       radius="9"
+  //       ariaLabel="three-dots-loading"
+  //       wrapperStyle={{}}
+  //       wrapperClass=""
+  //     />
+  //   </div>
+  //   )
   if (error) return <p>Error : {error.message}</p>
 
   const handleDonationClose = () => {
@@ -505,7 +505,27 @@ const Home: NextPage = () => {
       </Drawer>
 
       <div className="mt-4">
-        <TabsComponent
+        {loading ? ( // Display loading indicator
+          <div className="h-[70vh] w-[90vw] flex justify-center items-center">
+            <ThreeDots
+              visible={true}
+              height="80"
+              width="80"
+              color="var(--secondary)"
+              radius="9"
+              ariaLabel="three-dots-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
+        ) : (
+          <CampaignCardContainer
+            campaignsList={campaignsList}
+            handlePopUp={handleDonationOpen}
+            handleDrawer={handleDrawerOpen}
+          />
+        )}
+        {/* <TabsComponent
           tabs={tabsProps}
           component1={
             <CampaignCardContainer
@@ -514,9 +534,7 @@ const Home: NextPage = () => {
               handleDrawer={handleDrawerOpen}
             />
           }
-          component2={<>Content for Oragnizations campaigns</>}
-          component3={<>Content for Individual campaigns</>}
-        />
+        /> */}
       </div>
 
       <div className="absolute  right-20 top-12 hidden min-[850px]:flex">

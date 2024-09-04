@@ -11,8 +11,8 @@ interface TabsComponentProps {
   tabs: Tab[]
   maxWidth?: string
   component1: any
-  component2: any
-  component3: any
+  component2?: any
+  component3?: any
 }
 
 export default function TabsComponent({
@@ -26,7 +26,7 @@ export default function TabsComponent({
 
   return (
     <div
-      className={`flex flex-col items-center justify-between w-full ${maxWidth}`}
+      className={`flex flex-col items-start justify-start  w-full  ${maxWidth}`}
     >
       <div className="flex">
         {tabs.map(tab => (
@@ -46,35 +46,41 @@ export default function TabsComponent({
       </div>
 
       <div className="w-full p-4 mt-4">
-        <Fade
-          key={tabs[0].value}
-          in={activeTab === tabs[0].value}
-          timeout={600}
-        >
-          <div hidden={activeTab !== tabs[0].value}>
-            {activeTab === tabs[0].value && <>{component1}</>}
-          </div>
-        </Fade>
+        {component1 && (
+          <Fade
+            key={tabs[0].value}
+            in={activeTab === tabs[0].value}
+            timeout={600}
+          >
+            <div hidden={activeTab !== tabs[0].value}>
+              {activeTab === tabs[0].value && <>{component1}</>}
+            </div>
+          </Fade>
+        )}
 
-        <Fade
-          key={tabs[1].value}
-          in={activeTab === tabs[1].value}
-          timeout={600}
-        >
-          <div hidden={activeTab !== tabs[1].value}>
-            {activeTab === tabs[1].value && <>{component2}</>}
-          </div>
-        </Fade>
+        {component2 && (
+          <Fade
+            key={tabs[1].value}
+            in={activeTab === tabs[1].value}
+            timeout={600}
+          >
+            <div hidden={activeTab !== tabs[1].value}>
+              {activeTab === tabs[1].value && <>{component2}</>}
+            </div>
+          </Fade>
+        )}
 
-        <Fade
-          key={tabs[2].value}
-          in={activeTab === tabs[2].value}
-          timeout={600}
-        >
-          <div hidden={activeTab !== tabs[2].value}>
-            {activeTab === tabs[2].value && <>{component3}</>}
-          </div>
-        </Fade>
+        {component3 && (
+          <Fade
+            key={tabs[2].value}
+            in={activeTab === tabs[2].value}
+            timeout={600}
+          >
+            <div hidden={activeTab !== tabs[2].value}>
+              {activeTab === tabs[2].value && <>{component3}</>}
+            </div>
+          </Fade>
+        )}
       </div>
     </div>
   )

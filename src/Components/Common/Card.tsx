@@ -201,7 +201,7 @@ export const CampaignCardContainer = ({
 
   return (
     <>
-      <div className="flex w-[89vw] justify-end">
+      <div className="flex w-[89vw] justify-start mb-5 ">
         {/* Toggle Button Group */}
         <ToggleButtonGroup
           value={selectedStatus}
