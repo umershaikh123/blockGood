@@ -17,7 +17,11 @@ import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
 import axios from "axios"
 
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
-import { chainConfigs, getContractAddress } from "../../constants/chainConfig"
+import {
+  chainConfigs,
+  getChainConfig,
+  getContractAddress,
+} from "../../constants/chainConfig"
 import { useAccount } from "wagmi"
 import { donatationTracker_contractAddresses } from "../../constants/contracts"
 import { uploadImageToIPFS } from "../../util/ipfs"
@@ -57,7 +61,7 @@ const DonationPopup = ({
         </h1>
         <TextField
           type="number"
-          label="Amount"
+          label="Amount (ETH)"
           onChange={handleInputChange}
           value={amount}
           placeholder="Enter Donation amount..."
@@ -587,7 +591,8 @@ export const RegisterIndividualPopup = ({
 }
 
 export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
-  const { chain: networkChain } = useAccount()
+  const { chain: networkChain, isConnected } = useAccount()
+  const [requiredFee, setRequiredFee] = React.useState<string>("0")
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -595,6 +600,44 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
     coverImage: null as File | null,
     destinationChainSelector: "",
   })
+
+  useEffect(() => {
+    const handleFee = async () => {
+      if (isConnected) {
+        const chainConfig = getChainConfig(networkChain?.id || 11155111)
+        const provider = new ethers.providers.JsonRpcProvider(
+          chainConfig.rpcUrls.public.http[0]
+        )
+        const signer = provider.getSigner()
+
+        const chainId = networkChain?.id || 11155111
+
+        const contractAddress = getContractAddress(chainId)
+
+        const donationContract = new ethers.Contract(
+          contractAddress,
+          donationTrackerAbi,
+          provider
+        )
+
+        // const address = (await signer.getAddress()) || "0x"
+
+        const isIndividual = await donationContract.isRegisteredAsIndividual(
+          "0x8a770B7700f941Bb2E6Dd023AD3B22c2c41C5901"
+        )
+
+        const requiredFee = isIndividual
+          ? BigInt(7300000000000000)
+          : BigInt(36000000000000000)
+
+        const requiredFeeEther = ethers.utils.formatUnits(requiredFee, 18)
+        console.log("requiredFeeEther ", requiredFeeEther)
+        setRequiredFee(requiredFeeEther.toString())
+      }
+    }
+
+    handleFee()
+  }, [isConnected])
 
   useEffect(() => {
     if (networkChain) {
@@ -700,7 +743,6 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
       const requiredFee = isIndividual
         ? BigInt(7300000000000000)
         : BigInt(36000000000000000)
-      console.log("Required fee:", ethers.utils.formatEther(requiredFee), "ETH")
 
       console.log("Creating campaign transaction...")
 
@@ -937,7 +979,13 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         />
 
         {/* Remove the TextField for destinationChainSelector and replace it with a read-only display */}
-        <div className="my-4 max-w-[25rem] w-full">
+        <div className="mb-4 max-w-[25rem] w-full">
+          <div className="flex flex-col">
+            <h1 className="text-[var(--primary)] font-medium ">
+              Reqired Fee :{" "}
+            </h1>
+            <h1 className="text-[var(--primary)]  mb-2">{requiredFee} ETH</h1>
+          </div>
           <p className="text-[var(--primary)] mb-2 text-lg">
             Destination Chain:
           </p>
