@@ -290,7 +290,7 @@ const Home: NextPage = () => {
         const donationContract = new ethers.Contract(
           contractAddress,
           donationTrackerAbi,
-          signer
+          provider
         )
 
         const fetchedCampaigns: Campaign[] = []
@@ -387,13 +387,12 @@ const Home: NextPage = () => {
   const handleDonate = async (amount: number) => {
     console.log("campaign ID", currentCampaignID)
     console.log("donation amount", amount)
+    if (!amount || amount <= 0) {
+      alert("Please enter a valid donation amount.")
+      return
+    }
     const pendingToastId = toast.loading("Transaction Pending...")
     try {
-      if (!amount || amount <= 0) {
-        alert("Please enter a valid donation amount.")
-        return
-      }
-
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
 
