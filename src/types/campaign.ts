@@ -5,7 +5,7 @@ export interface CampaignCardPropsType {
   title: string
   raisedValue: BigNumber
   GoalValue: BigNumber
-
+  active: boolean
   handleClick: any
   handleDrawer: any
 }

@@ -132,7 +132,7 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
   console.log("dataObject Table", dataObject)
   const combinedData = tableData.map((item, index) => ({
     ...item,
-    transactionHash: txHashes[index], // Add the transaction hash from txHashes
+    transactionHash: txHashes[index],
   }))
 
   const mergedData = combinedData.map(attestation => {

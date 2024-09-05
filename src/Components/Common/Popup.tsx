@@ -40,6 +40,7 @@ const DonationPopup = ({
     console.log("amount", amount)
     setAmount(value)
   }
+
   return (
     <div onClick={event => event.stopPropagation()}>
       <div className="flex flex-col w-[26rem] h-[20rem] bg-[var(--Bg)] rounded-xl justify-evenly items-center relative">
@@ -113,6 +114,245 @@ const DonationPopup = ({
           onClick={() => handleDonate(amount)}
         >
           Donate
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export const UploadPOSPopup = ({
+  handleClose,
+  handleUpload,
+}: {
+  handleClose: () => void
+  handleUpload: any
+}) => {
+  const [proofImage, setProofImage] = useState(null as File | null)
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setProofImage(file)
+    } else {
+      setProofImage(null)
+    }
+  }
+
+  return (
+    <div onClick={event => event.stopPropagation()}>
+      <div className="flex flex-col w-[30rem] h-[20rem] bg-[var(--Bg)] rounded-xl justify-evenly items-center relative">
+        <div className=" absolute top-2 right-5" onClick={handleClose}>
+          <Close
+            sx={{
+              color: "var(--primary)",
+              fontSize: 40,
+              ":hover": {
+                transition: "transform 0.3s ease-in-out",
+
+                transform: "rotate(90deg)",
+              },
+            }}
+          />
+        </div>
+        <h1 className=" text-4xl text-[var(--primary)] font-semibold">
+          Upload Proof
+        </h1>
+        <TextField
+          name="Proof File/Image"
+          type="file"
+          label="Proof File/Image"
+          onChange={handleInputChange}
+          sx={{
+            marginY: "1rem",
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+        />
+
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "var(--primary)",
+            color: "var(--Bg)",
+            textTransform: "capitalize",
+            px: "3rem",
+            py: "4px",
+            fontWeight: 500,
+            borderRadius: "0.3rem",
+          }}
+          onClick={async () => {
+            if (!proofImage) {
+              toast.error("upload proofImage")
+              return
+            }
+            console.log("Uploading image to IPFS...")
+            const proofImageUrl = await uploadImageToIPFS(proofImage)
+            console.log("Image uploaded, URL:", proofImageUrl)
+            handleUpload(proofImageUrl)
+          }}
+        >
+          Upload
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+export const WithdrawPopup = ({
+  handleClose,
+  handleWithdraw,
+}: {
+  handleClose: () => void
+  handleWithdraw: any
+}) => {
+  const [amount, setAmount] = React.useState<string>("0")
+  const [Reason, setReason] = React.useState<string>("")
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target
+
+    setAmount(value)
+  }
+
+  const handleReasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target
+    console.log("Reason", value)
+    setReason(value)
+  }
+  return (
+    <div onClick={event => event.stopPropagation()}>
+      <div className="flex flex-col w-[30rem] h-[30rem] bg-[var(--Bg)] rounded-xl justify-evenly items-center relative">
+        <div className=" absolute top-2 right-5" onClick={handleClose}>
+          <Close
+            sx={{
+              color: "var(--primary)",
+              fontSize: 40,
+              ":hover": {
+                transition: "transform 0.3s ease-in-out",
+
+                transform: "rotate(90deg)",
+              },
+            }}
+          />
+        </div>
+        <h1 className=" text-4xl text-[var(--primary)] font-semibold">
+          Withdraw
+        </h1>
+        <TextField
+          type="number"
+          label="Amount (ETH)"
+          onChange={handleInputChange}
+          value={amount}
+          placeholder="Enter Donation amount..."
+          InputProps={{
+            inputProps: { step: "0.01" },
+          }}
+          sx={{
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+        <TextField
+          name="Reason"
+          type="text"
+          label="Reason"
+          multiline
+          placeholder="Enter your Reason for withdrawal ..."
+          value={Reason}
+          onChange={handleReasonChange}
+          sx={{
+            maxWidth: "25rem",
+            "& label": {
+              color: "var(--primary)",
+              "&.Mui-focused": {
+                color: "var(--secondary)",
+              },
+            },
+            "& input": {
+              color: "var(--primary)",
+              backgroundColor: "var(--Bg)",
+            },
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&:hover fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            },
+          }}
+          variant="outlined"
+          fullWidth
+        />
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "var(--primary)",
+            color: "var(--Bg)",
+            textTransform: "capitalize",
+            px: "3rem",
+            py: "4px",
+            fontWeight: 500,
+            borderRadius: "0.3rem",
+          }}
+          onClick={() => handleWithdraw(amount, Reason)}
+        >
+          Withdraw
         </Button>
       </div>
     </div>

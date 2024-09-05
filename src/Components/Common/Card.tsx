@@ -9,6 +9,8 @@ import { calculateCampaignProgress } from "../../util"
 import Fade from "@mui/material/Fade"
 import ToggleButton from "@mui/material/ToggleButton"
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
+import { useAccount } from "wagmi"
+import ForumIcon from "@mui/icons-material/Forum"
 
 export interface StatCardPropsType {
   raisedValue: BigNumber
@@ -58,7 +60,7 @@ export const StatCard = ({
 
   const convertEthToUsd = (value: BigNumber) => {
     if (!ethToUsdRate) return { formatted: "Loading...", raw: 0 }
-    const ethValueInDecimal = parseFloat(value.toString()) / 1e18 // Convert from Wei to ETH
+    const ethValueInDecimal = parseFloat(value.toString()) / 1e18
     const usdValue = ethValueInDecimal * ethToUsdRate
     return { formatted: formatCurrency(usdValue), raw: usdValue }
   }
@@ -104,7 +106,7 @@ export const CampaignCard = ({
   title,
   raisedValue,
   GoalValue,
-
+  active,
   handleClick,
   handleDrawer,
 }: CampaignCardPropsType) => {
@@ -138,29 +140,34 @@ export const CampaignCard = ({
       <div className=" mx-4">
         <ProgressBar progress={progress} />
       </div>
-      <Button
-        variant="outlined"
-        sx={{
-          color: "var(--primary)",
-          border: "2px solid var(--primary)",
-          width: "full",
-          marginX: "1rem",
-          marginY: "1rem",
-          fontWeight: 600,
-          borderRadius: "6px",
-          ":hover": {
-            bgcolor: "var(--secondary)",
-            color: "white",
-            border: "2px solid var(--secondary)",
-          },
-        }}
-        onClick={event => {
-          event.stopPropagation()
-          handleClick()
-        }}
-      >
-        Donate
-      </Button>
+
+      {active ? (
+        <Button
+          variant="outlined"
+          sx={{
+            color: "var(--primary)",
+            border: "2px solid var(--primary)",
+            width: "full",
+            marginX: "1rem",
+            marginY: "1rem",
+            fontWeight: 600,
+            borderRadius: "6px",
+            ":hover": {
+              bgcolor: "var(--secondary)",
+              color: "white",
+              border: "2px solid var(--secondary)",
+            },
+          }}
+          onClick={event => {
+            event.stopPropagation()
+            handleClick()
+          }}
+        >
+          Donate
+        </Button>
+      ) : (
+        <div className=" mt-[1rem]" />
+      )}
 
       <div className="border">
         <StatCard
@@ -173,6 +180,159 @@ export const CampaignCard = ({
   )
 }
 
+export interface AdminCampaignCardType {
+  bgImage: string
+  title: string
+  raisedValue: BigNumber
+  GoalValue: BigNumber
+  handleEndCampaign: any
+  handleClick: any
+  handleDrawer: any
+  handleUploadPOS: any
+  active: boolean
+}
+
+export const AdminCampaignCard = ({
+  bgImage,
+  title,
+  raisedValue,
+  GoalValue,
+  handleEndCampaign,
+  handleUploadPOS,
+  handleClick,
+  handleDrawer,
+  active,
+}: AdminCampaignCardType) => {
+  // const leftValue = raisedValue - GoalValue
+
+  const progress = calculateCampaignProgress({
+    raisedValue: raisedValue,
+    goalValue: GoalValue,
+  })
+  console.log("active", active)
+
+  return (
+    <div className="flex flex-col">
+      <div
+        className="group flex flex-col border-2 border-gray-200 w-fit rounded-xl h-full hover:border-[var(--primary)] transition-all duration-300 justify-between"
+        onClick={handleDrawer}
+      >
+        <div className="">
+          <img
+            src={bgImage}
+            width={350}
+            height={350}
+            alt="Campaign Background Image"
+            className="rounded-xl "
+          />
+        </div>
+        <h2 className="text-lg  font-semibold text-[var(--primary)] max-w-[21rem] p-2 opacity-90">
+          {title}
+        </h2>
+
+        <div className=" mx-4">
+          <ProgressBar progress={progress} />
+        </div>
+
+        {active ? (
+          <Button
+            variant="outlined"
+            sx={{
+              color: "var(--primary)",
+              border: "2px solid var(--primary)",
+              width: "full",
+              marginX: "1rem",
+              marginY: "1rem",
+              fontWeight: 600,
+              borderRadius: "6px",
+              ":hover": {
+                bgcolor: "var(--secondary)",
+                color: "white",
+                border: "2px solid var(--secondary)",
+              },
+            }}
+            onClick={event => {
+              event.stopPropagation()
+              handleClick()
+            }}
+          >
+            Withdraw
+          </Button>
+        ) : (
+          <div className=" mt-[1rem]" />
+        )}
+
+        <div className="border">
+          <StatCard
+            raisedValue={raisedValue}
+            GoalValue={GoalValue}
+            LeftValue={BigNumber.from(0)}
+          />
+        </div>
+      </div>
+      <div className=" space-x-4 mt-4 flex w-full max-w-[22rem] justify-center ">
+        {active && (
+          <>
+            <Button
+              variant="outlined"
+              sx={{
+                color: "var(--primary)",
+                border: "2px solid var(--primary)",
+                width: "full",
+                px: "1rem",
+                fontWeight: 600,
+                borderRadius: "6px",
+                textTransform: "capitalize",
+                ":hover": {
+                  bgcolor: "var(--secondary)",
+                  color: "white",
+                  border: "2px solid var(--secondary)",
+                },
+              }}
+              // onClick={() => handleDonationOpen(campaignID)}
+              onClick={handleUploadPOS}
+            >
+              Upload POS
+            </Button>
+
+            <Button
+              variant="outlined"
+              startIcon={
+                <ForumIcon
+                  sx={{
+                    color: "white",
+                  }}
+                />
+              }
+              sx={{
+                color: "white",
+                border: "2px solid var(--primary)",
+                bgcolor: "var(--primary)",
+                width: "full",
+                px: "1rem",
+                fontWeight: 600,
+                textTransform: "capitalize",
+                borderRadius: "6px",
+
+                ":hover": {
+                  bgcolor: "white",
+                  color: "var(--secondary)",
+                  border: "2px solid var(--secondary)",
+                  "& .MuiSvgIcon-root": {
+                    color: "var(--secondary)",
+                  },
+                },
+              }}
+              onClick={handleEndCampaign}
+            >
+              End Campaign
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 export const CampaignCardContainer = ({
   campaignsList,
   handlePopUp,
@@ -182,6 +342,7 @@ export const CampaignCardContainer = ({
   handlePopUp: any
   handleDrawer: any
 }) => {
+  console.log("campaignsList", campaignsList)
   const [selectedStatus, setSelectedStatus] = React.useState<string>("active")
 
   // Handler for toggle button group
@@ -253,12 +414,120 @@ export const CampaignCardContainer = ({
           {filteredCampaigns.map((campaign, index) => (
             <CampaignCard
               key={index}
+              active={campaign.active}
               bgImage={campaign.coverImage}
               title={campaign.title}
               raisedValue={campaign.raised}
               GoalValue={campaign.goal}
               handleClick={() => handlePopUp(campaign.campaignId)}
               handleDrawer={() => handleDrawer(campaign)}
+            />
+          ))}
+        </div>
+      </Fade>
+    </>
+  )
+}
+
+export const YourCampaignCardContainer = ({
+  campaignsList,
+  handlePopUp,
+  handleDrawer,
+  handleEndCampaign,
+  handleUploadPOS,
+}: {
+  campaignsList: CampaignType[]
+  handlePopUp: any
+  handleDrawer: any
+  handleEndCampaign: any
+  handleUploadPOS: any
+}) => {
+  // data fetch campaign ID and creator address
+  const [selectedStatus, setSelectedStatus] = React.useState<string>("active")
+  const { address } = useAccount()
+  // Handler for toggle button group
+  const handleStatusChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newStatus: string
+  ) => {
+    if (newStatus !== null) {
+      setSelectedStatus(newStatus)
+    }
+  }
+
+  const filteredCampaigns = campaignsList.filter(campaign => {
+    const matchesStatus =
+      selectedStatus === "active" ? campaign.active : !campaign.active
+    const matchesAddress =
+      campaign.creator.toLowerCase() === address?.toLowerCase() // Matches if campaign creator matches the current authenticated address
+    return matchesStatus && matchesAddress // Only show campaigns that match both the status and the address
+  })
+
+  console.log("filteredCampaigns", filteredCampaigns)
+
+  return (
+    <>
+      <div className="flex w-[89vw] justify-start mb-5 ">
+        {/* Toggle Button Group */}
+        <ToggleButtonGroup
+          value={selectedStatus}
+          exclusive
+          onChange={handleStatusChange}
+          aria-label="campaign status"
+        >
+          <ToggleButton
+            value="active"
+            aria-label="active campaigns"
+            sx={{
+              "&.Mui-selected": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focusVisible": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            }}
+          >
+            Active
+          </ToggleButton>
+          <ToggleButton
+            value="ended"
+            aria-label="ended campaigns"
+            sx={{
+              "&.Mui-selected": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+              "&.Mui-focusVisible": {
+                bgcolor: "var(--Bg)",
+                borderColor: "var(--primary)",
+                color: "var(--primary)",
+              },
+            }}
+          >
+            Ended
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+
+      <Fade in={true} timeout={500}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-[90vw]">
+          {filteredCampaigns.map((campaign, index) => (
+            <AdminCampaignCard
+              key={index}
+              active={campaign.active}
+              bgImage={campaign.coverImage}
+              title={campaign.title}
+              raisedValue={campaign.raised}
+              GoalValue={campaign.goal}
+              handleClick={() => handlePopUp(campaign.campaignId)}
+              handleDrawer={() => handleDrawer(campaign)}
+              handleEndCampaign={() => handleEndCampaign(campaign)}
+              handleUploadPOS={() => handleUploadPOS(campaign.campaignId)}
             />
           ))}
         </div>

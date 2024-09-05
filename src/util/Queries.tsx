@@ -20,3 +20,14 @@ export const GET_DONATION_RECIEVED = gql`
     }
   }
 `
+
+export const GET_PROOF_UPLOADED = gql`
+  query MyQuery {
+    DonationTracker_ProofUploaded {
+      campaignId
+      id
+      proofUrl
+      withdrawalId
+    }
+  }
+`
