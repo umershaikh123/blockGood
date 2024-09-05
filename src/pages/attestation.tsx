@@ -10,6 +10,8 @@ import { AttestationTable } from "../Components/Common/Table"
 import { ethers } from "ethers"
 import { ThreeDots } from "react-loader-spinner"
 import { decodeAbiParameters } from "viem"
+import Image from "next/image"
+import signLogo from "/public/Icons/signIcon.webp"
 interface Attestation {
   id: string
   attester: string
@@ -125,9 +127,18 @@ const AttestationPage: NextPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-semibold text-[var(--primary)] mb-6">
-        Donation Tracker
-      </h1>
+      <div className="flex items-center justify-center  ">
+        <Image
+          src={signLogo}
+          width={140}
+          height={140}
+          alt="sign protocol logo"
+          className=" "
+        />
+        <h1 className="text-3xl font-semibold text-[var(--primary)]  flex items-center   ">
+          Donation Tracker
+        </h1>
+      </div>
 
       <div>
         {loading ? (

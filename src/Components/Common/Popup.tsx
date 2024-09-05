@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Button } from "@mui/material"
 import { Close } from "@mui/icons-material"
 import TextField from "@mui/material/TextField"
-import PhotoIcon from "@mui/icons-material/Photo"
-import InputAdornment from "@mui/material/InputAdornment"
+
 import Radio from "@mui/material/Radio"
 import RadioGroup from "@mui/material/RadioGroup"
 import FormControlLabel from "@mui/material/FormControlLabel"
@@ -15,7 +14,7 @@ import { ToastIcon } from "react-toastify/dist/types"
 import "react-toastify/dist/ReactToastify.css"
 import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
 import axios from "axios"
-
+import Link from "next/link"
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
 import {
   chainConfigs,
@@ -25,6 +24,8 @@ import {
 import { useAccount } from "wagmi"
 import { donatationTracker_contractAddresses } from "../../constants/contracts"
 import { uploadImageToIPFS } from "../../util/ipfs"
+import Image from "next/image"
+import safeWalletLogo from "/public/Icons/safeWallet.png"
 
 const DonationPopup = ({
   handleClose,
@@ -1396,7 +1397,7 @@ export const RegisterOrganizationPopup = ({
 
   return (
     <div onClick={event => event.stopPropagation()}>
-      <div className="flex flex-col w-[40rem] h-[92vh] bg-[var(--Bg)] rounded-xl   items-center relative overflow-auto">
+      <div className="flex flex-col w-[40rem] h-[92vh] bg-[var(--Bg)] rounded-xl  py-4  items-center relative overflow-auto">
         <div className="absolute top-2 right-5" onClick={handleClose}>
           <Close
             sx={{
@@ -1413,6 +1414,29 @@ export const RegisterOrganizationPopup = ({
           Register Organization
         </h1>
 
+        <div className="flex items-center">
+          <div className="">
+            <Image
+              src={safeWalletLogo}
+              height={40}
+              width={40}
+              alt="safe wallet logo"
+              className=" "
+            />
+          </div>
+          <h1 className="text-base text-[var(--primary)] font-semibold my-4 ml-2">
+            We recommend providing multi-sig address using{" "}
+            <span className="hover:text-[var(--secondary)]  duration-300 ease-in-out transition-colors">
+              <Link
+                href={"https://safe.global/wallet"}
+                target="_blank"
+                className="  underline  "
+              >
+                Safe Wallet
+              </Link>
+            </span>
+          </h1>
+        </div>
         <TextField
           name="name"
           type="text"
