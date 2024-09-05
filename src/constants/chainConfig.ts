@@ -127,3 +127,5 @@ export const getChainConfig = (chainId: number): ChainConfig => {
 export const getContractAddress = (chainId: number): string => {
   return getChainConfig(chainId).contractAddress
 }
+
+export const galadrielAddress = "0x1cf52A8D389b6821bf53e5c2787DA872d56dB1F1"

@@ -516,20 +516,32 @@ export const YourCampaignCardContainer = ({
 
       <Fade in={true} timeout={500}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-[90vw]">
-          {filteredCampaigns.map((campaign, index) => (
-            <AdminCampaignCard
-              key={index}
-              active={campaign.active}
-              bgImage={campaign.coverImage}
-              title={campaign.title}
-              raisedValue={campaign.raised}
-              GoalValue={campaign.goal}
-              handleClick={() => handlePopUp(campaign.campaignId)}
-              handleDrawer={() => handleDrawer(campaign)}
-              handleEndCampaign={() => handleEndCampaign(campaign)}
-              handleUploadPOS={() => handleUploadPOS(campaign.campaignId)}
-            />
-          ))}
+          {filteredCampaigns.length > 0 ? (
+            <>
+              {filteredCampaigns.map((campaign, index) => (
+                <AdminCampaignCard
+                  key={index}
+                  active={campaign.active}
+                  bgImage={campaign.coverImage}
+                  title={campaign.title}
+                  raisedValue={campaign.raised}
+                  GoalValue={campaign.goal}
+                  handleClick={() => handlePopUp(campaign.campaignId)}
+                  handleDrawer={() => handleDrawer(campaign)}
+                  handleEndCampaign={() => handleEndCampaign(campaign)}
+                  handleUploadPOS={() => handleUploadPOS(campaign.campaignId)}
+                />
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="h-[60vh] flex items-center justify-center    w-[90vw]">
+                <h1 className="text-3xl text-[var(--secondary)] text-semibold  px-4 py-2 rounded-xl">
+                  No Campaigns Found
+                </h1>
+              </div>
+            </>
+          )}
         </div>
       </Fade>
     </>

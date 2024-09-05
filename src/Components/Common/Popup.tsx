@@ -956,16 +956,6 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
       const isOrganization = await donationContract.isRegisteredAsOrganization(
         address
       )
-      // const [isIndividual, isOrganization] = await Promise.all([
-      //   donationContract.isRegisteredAsIndividual(address),
-      //   donationContract.isRegisteredAsOrganization(address),
-      // ])
-      console.log(
-        "Is individual:",
-        isIndividual,
-        "Is organization:",
-        isOrganization
-      )
 
       if (!isIndividual && !isOrganization) {
         throw new Error(
@@ -973,22 +963,14 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         )
       }
 
-      // const requiredFee = isIndividual
-      //   ? await donationContract.INDIVIDUAL_FEE()
-      //   : await donationContract.ORGANIZATION_FEE()
-
-      // const requiredFee = isIndividual ? "0.0073" : "0.036"
-
       const requiredFee = isIndividual
         ? BigInt(7300000000000000)
         : BigInt(36000000000000000)
 
       console.log("Creating campaign transaction...")
 
-      // request account access
       await window.ethereum.request({ method: "eth_requestAccounts" })
 
-      // create the transaction
       const tx = await donationContract.createCampaign(
         title,
         description,
@@ -1221,7 +1203,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         <div className="mb-4 max-w-[25rem] w-full">
           <div className="flex flex-col">
             <h1 className="text-[var(--primary)] font-medium ">
-              Reqired Fee :{" "}
+              Required Fee :{" "}
             </h1>
             <h1 className="text-[var(--primary)]  mb-2">{requiredFee} ETH</h1>
           </div>
@@ -1235,21 +1217,23 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           </div>
         </div>
 
-        <Button
-          variant="contained"
-          onClick={handleCreateCampaign}
-          sx={{
-            backgroundColor: "var(--primary)",
-            color: "var(--Bg)",
-            textTransform: "capitalize",
-            px: "3rem",
-            py: "4px",
-            fontWeight: 500,
-            borderRadius: "0.3rem",
-          }}
-        >
-          Create
-        </Button>
+        <div className="flex ">
+          <Button
+            variant="contained"
+            onClick={handleCreateCampaign}
+            sx={{
+              backgroundColor: "var(--primary)",
+              color: "var(--Bg)",
+              textTransform: "capitalize",
+              px: "3rem",
+              py: "4px",
+              fontWeight: 500,
+              borderRadius: "0.3rem",
+            }}
+          >
+            Create
+          </Button>
+        </div>
       </div>
     </div>
   )

@@ -56,6 +56,7 @@ type Campaign = {
 
 const campaign = () => {
   const [individualPopUpOpen, setIndividualPopUpOpen] = React.useState(false)
+
   const handleIndividualClose = () => {
     setIndividualPopUpOpen(false)
   }
@@ -73,7 +74,7 @@ const campaign = () => {
   const { error, data } = useQuery(GET_CAMPAIGN_IDS)
   const { data: proofData } = useQuery(GET_PROOF_UPLOADED)
 
-  const { chain: networkChain, address } = useAccount()
+  const { chain: networkChain, address, isConnected } = useAccount()
 
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
   const [loading, setLoading] = useState<boolean>(false)
@@ -534,35 +535,45 @@ const campaign = () => {
       </div>
 
       <div className=" ml-8 mt-4">
-        {loading ? ( // Display loading indicator
-          <div className="h-[70vh] w-[90vw] flex justify-center items-center">
-            <ThreeDots
-              visible={true}
-              height="80"
-              width="80"
-              color="var(--secondary)"
-              radius="9"
-              ariaLabel="three-dots-loading"
-              wrapperStyle={{}}
-              wrapperClass=""
-            />
-          </div>
+        {isConnected ? (
+          <>
+            {loading ? ( // Display loading indicator
+              <div className="h-[70vh] w-[90vw] flex justify-center items-center">
+                <ThreeDots
+                  visible={true}
+                  height="80"
+                  width="80"
+                  color="var(--secondary)"
+                  radius="9"
+                  ariaLabel="three-dots-loading"
+                  wrapperStyle={{}}
+                  wrapperClass=""
+                />
+              </div>
+            ) : (
+              <YourCampaignCardContainer
+                campaignsList={campaignsList}
+                handlePopUp={(CampaignID: string) => {
+                  setCurrentCampaignID(CampaignID)
+                  setWithdrawPopUpOpen(true)
+                }}
+                handleDrawer={handleDrawerOpen}
+                handleEndCampaign={(Campaign: Campaign) => {
+                  handleEndCampaign(Campaign)
+                }}
+                handleUploadPOS={(CampaignID: string) => {
+                  setCurrentCampaignID(CampaignID)
+                  setUploadPopUpOpen(true)
+                }}
+              />
+            )}
+          </>
         ) : (
-          <YourCampaignCardContainer
-            campaignsList={campaignsList}
-            handlePopUp={(CampaignID: string) => {
-              setCurrentCampaignID(CampaignID)
-              setWithdrawPopUpOpen(true)
-            }}
-            handleDrawer={handleDrawerOpen}
-            handleEndCampaign={(Campaign: Campaign) => {
-              handleEndCampaign(Campaign)
-            }}
-            handleUploadPOS={(CampaignID: string) => {
-              setCurrentCampaignID(CampaignID)
-              setUploadPopUpOpen(true)
-            }}
-          />
+          <div className="h-[60vh] flex items-center justify-center">
+            <h1 className="text-3xl text-[var(--secondary)] text-semibold  px-4 py-2 rounded-xl">
+              Please Connect wallet
+            </h1>
+          </div>
         )}
       </div>
     </div>
