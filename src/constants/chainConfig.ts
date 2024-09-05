@@ -114,6 +114,29 @@ export const chainConfigs: { [key: number]: ChainConfig } = {
     testnet: true,
     contractAddress: "0x9876543210987654321098765432109876543210",
   },
+
+  696969: {
+    id: 696969,
+    name: "Galadriel Devnet",
+    network: "galadriel-devnet",
+    nativeCurrency: { name: "GAL Token", symbol: "GAL", decimals: 18 },
+    rpcUrls: {
+      default: {
+        http: ["https://devnet.galadriel.com"],
+      },
+      public: {
+        http: ["https://devnet.galadriel.com"],
+      },
+    },
+    blockExplorers: {
+      default: {
+        name: "Etherscan",
+        url: "https://explorer.galadriel.com",
+      },
+    },
+    testnet: true,
+    contractAddress: "0x1cf52A8D389b6821bf53e5c2787DA872d56dB1F1",
+  },
 }
 
 export const getChainConfig = (chainId: number): ChainConfig => {
@@ -128,4 +151,5 @@ export const getContractAddress = (chainId: number): string => {
   return getChainConfig(chainId).contractAddress
 }
 
-export const galadrielAddress = "0x1cf52A8D389b6821bf53e5c2787DA872d56dB1F1"
+export const galadrielContractAddress =
+  "0x1cf52A8D389b6821bf53e5c2787DA872d56dB1F1"

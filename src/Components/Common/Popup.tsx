@@ -15,18 +15,26 @@ import "react-toastify/dist/ReactToastify.css"
 import { useAddRecentTransaction } from "@rainbow-me/rainbowkit"
 import axios from "axios"
 import Link from "next/link"
+import galadrielLogo from "/public/Icons/galadrielLogo.png"
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
+import galadrielAbi from "../../contracts/abis/galadriel.json"
 import {
   chainConfigs,
+  galadrielContractAddress,
   getChainConfig,
   getContractAddress,
 } from "../../constants/chainConfig"
-import { useAccount } from "wagmi"
+import { useAccount, useSwitchChain } from "wagmi"
+
 import { donatationTracker_contractAddresses } from "../../constants/contracts"
 import { uploadImageToIPFS } from "../../util/ipfs"
 import Image from "next/image"
 import safeWalletLogo from "/public/Icons/safeWallet.png"
+import Tippy from "@tippyjs/react"
+import "tippy.js/animations/scale.css"
+import "tippy.js/themes/translucent.css"
 
+import { config } from "../../wagmi"
 const DonationPopup = ({
   handleClose,
   handleDonate,
@@ -839,39 +847,58 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
     description: "",
     goal: "",
     coverImage: null as File | null,
+    aiImageurl: "",
     destinationChainSelector: "",
+  })
+
+  const { switchChainAsync } = useSwitchChain({
+    config,
   })
 
   useEffect(() => {
     const handleFee = async () => {
       if (isConnected && address) {
         const chainConfig = getChainConfig(networkChain?.id || 11155111)
+
         const provider = new ethers.providers.JsonRpcProvider(
           chainConfig.rpcUrls.public.http[0]
         )
         const signer = provider.getSigner()
 
-        const chainId = networkChain?.id || 11155111
+        let chainId = networkChain?.id || 11155111
 
-        const contractAddress = getContractAddress(chainId)
+        if (chainId === 696969) {
+          chainId = 11155111
+        }
 
-        const donationContract = new ethers.Contract(
-          contractAddress,
-          donationTrackerAbi,
-          provider
-        )
+        try {
+          const contractAddress = getContractAddress(chainId)
+          console.log("chainId contractAddress   address", {
+            chainId,
+            contractAddress,
+            address,
+          })
 
-        const isIndividual = await donationContract.isRegisteredAsIndividual(
-          address
-        )
+          const donationContract = new ethers.Contract(
+            contractAddress,
+            donationTrackerAbi,
+            provider
+          )
 
-        const requiredFee = isIndividual
-          ? BigInt(7300000000000000)
-          : BigInt(36000000000000000)
+          const isIndividual = await donationContract.isRegisteredAsIndividual(
+            address
+          )
 
-        const requiredFeeEther = ethers.utils.formatUnits(requiredFee, 18)
-        console.log("requiredFeeEther ", requiredFeeEther)
-        setRequiredFee(requiredFeeEther.toString())
+          const requiredFee = isIndividual
+            ? BigInt(7300000000000000)
+            : BigInt(36000000000000000)
+
+          const requiredFeeEther = ethers.utils.formatUnits(requiredFee, 18)
+          console.log("requiredFeeEther ", requiredFeeEther)
+          setRequiredFee(requiredFeeEther.toString())
+        } catch (error: any) {
+          console.log(" handleFee error", error)
+        }
       }
     }
 
@@ -902,9 +929,90 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
     }))
   }
 
+  const handleGaladriel = async () => {
+    const { title } = formValues
+
+    if (!title) {
+      console.error("Missing title")
+      toast.error("Please fill title")
+      return
+    }
+
+    try {
+      if (networkChain?.id !== 696969) {
+        toast.info("Switch to Galadriel Network")
+        await switchChainAsync({ chainId: 696969 })
+      }
+    } catch (error) {
+      console.log("User rejected Tx", error)
+      return
+    }
+
+    const pendingToastId = toast.loading("pending Tx...", {
+      icon: "⏳" as unknown as ToastIcon,
+    })
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+
+      const contractAddress = galadrielContractAddress
+
+      const galadrielContract = new ethers.Contract(
+        contractAddress,
+        galadrielAbi,
+        signer
+      )
+
+      toast.info("Generating Description ...")
+      console.log("title", title)
+      const tx = await galadrielContract.enhanceDescription(title)
+      await tx.wait()
+
+      console.log("tx", tx)
+      const aiDescription = await galadrielContract.getEnhancedDescription(tx)
+
+      setFormValues(prevValues => ({
+        ...prevValues,
+        description: aiDescription,
+      }))
+      // await galadrielContract.enhanceCoverImage(requestId)
+
+      // toast.info("Generating Image ...")
+      // const aiImageURL = await galadrielContract.getCoverImageUrl(requestId)
+
+      // setFormValues(prevValues => ({
+      //   ...prevValues,
+      //   aiImageurl: aiImageURL,
+      // }))
+
+      toast.update(pendingToastId, {
+        render: "Tx successfull!",
+        type: "success",
+        icon: "✅" as unknown as ToastIcon,
+        autoClose: 5000,
+        isLoading: false,
+      })
+    } catch (error: any) {
+      toast.update(pendingToastId, {
+        render: `Transaction Failed : ${error.message}`,
+        type: "error",
+        icon: "❌" as unknown as ToastIcon,
+        autoClose: 5000,
+        isLoading: false,
+      })
+    }
+  }
+
   const handleCreateCampaign = async () => {
-    const { title, description, goal, coverImage, destinationChainSelector } =
-      formValues
+    const {
+      title,
+      description,
+      goal,
+      coverImage,
+      destinationChainSelector,
+      aiImageurl,
+    } = formValues
     console.log("Creating campaign with values:", {
       title,
       description,
@@ -927,8 +1035,17 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
     )
 
     try {
+      let coverImageUrl
+
+      if (aiImageurl) {
+        coverImageUrl = aiImageurl
+      } else {
+        coverImageUrl = await uploadImageToIPFS(coverImage)
+      }
+
       console.log("Uploading image to IPFS...")
-      const coverImageUrl = await uploadImageToIPFS(coverImage)
+      // const coverImageUrl = await uploadImageToIPFS(coverImage)
+
       console.log("Image uploaded, URL:", coverImageUrl)
 
       const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -985,7 +1102,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
       console.log("Transaction confirmed, receipt:", receipt)
 
       toast.update(pendingToastId, {
-        render: "Campaign created successfully!",
+        render: "Tx successfully!",
         type: "success",
         icon: "✅" as unknown as ToastIcon,
         autoClose: 5000,
@@ -1014,14 +1131,15 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
 
       handleClose()
     } catch (error: any) {
-      console.error("Error creating campaign:", error)
       toast.update(pendingToastId, {
-        render: `Failed to create campaign: ${error.message}`,
+        render: `Transaction Failed : ${error.message}`,
         type: "error",
         icon: "❌" as unknown as ToastIcon,
         autoClose: 5000,
         isLoading: false,
       })
+    } finally {
+      window.location.reload()
     }
   }
 
@@ -1199,6 +1317,20 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           fullWidth
         />
 
+        {formValues.aiImageurl ? (
+          <img
+            src={formValues.aiImageurl}
+            alt="AI Generated Cover"
+            style={{ maxWidth: "100%", marginTop: "1rem" }}
+          />
+        ) : formValues.coverImage ? (
+          <img
+            src={URL.createObjectURL(formValues.coverImage)}
+            alt="Uploaded Cover"
+            style={{ maxWidth: "100%", marginTop: "1rem" }}
+          />
+        ) : null}
+
         {/* Remove the TextField for destinationChainSelector and replace it with a read-only display */}
         <div className="mb-4 max-w-[25rem] w-full">
           <div className="flex flex-col">
@@ -1217,7 +1349,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           </div>
         </div>
 
-        <div className="flex ">
+        <div className="flex space-x-4 ml-5">
           <Button
             variant="contained"
             onClick={handleCreateCampaign}
@@ -1233,6 +1365,45 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           >
             Create
           </Button>
+
+          <Tippy
+            placement="top"
+            animateFill={true}
+            animation={"scale"}
+            theme="custom"
+            content={`Generate Ai Cover image and description`}
+          >
+            <Button
+              variant="contained"
+              onClick={handleGaladriel}
+              startIcon={
+                <Image
+                  src={galadrielLogo}
+                  width={30}
+                  height={30}
+                  alt="galadriel Logo"
+                  className=" rounded-2xl"
+                />
+              }
+              sx={{
+                backgroundColor: "var(--Bg)",
+                color: "#0557DF",
+                border: "2px solid #0557DF",
+                textTransform: "capitalize",
+                px: "3rem",
+                py: "4px",
+                fontWeight: 500,
+                borderRadius: "0.3rem",
+                ":hover": {
+                  bgcolor: "#0557DF",
+                  color: "var(--Bg)",
+                  border: "2px solid #0557DF",
+                },
+              }}
+            >
+              Galadriel Ai
+            </Button>
+          </Tippy>
         </div>
       </div>
     </div>

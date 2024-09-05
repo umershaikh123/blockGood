@@ -383,6 +383,8 @@ const campaign = () => {
         autoClose: 5000,
         isLoading: false,
       })
+    } finally {
+      window.location.reload()
     }
   }
 
