@@ -95,12 +95,21 @@ interface Attestation {
   }
 }
 
+interface AttestationData {
+  campaignId: string
+  donorAddress: string
+  Amount: bigint
+  timeStamp: string
+}
+
 interface AttestationTableProps {
   tableData: Attestation[]
+  dataObject: AttestationData[]
 }
 
 export const AttestationTable: React.FC<AttestationTableProps> = ({
   tableData,
+  dataObject,
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const totalPages = Math.ceil(tableData.length / 5)
@@ -109,7 +118,52 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
     setCurrentPage(page)
   }
 
-  const displayedData = tableData.slice((currentPage - 1) * 7, currentPage * 7)
+  console.log("dataObject Table", dataObject)
+
+  const mergedData = tableData.map(attestation => {
+    const matchedData = dataObject.find(
+      data =>
+        data.donorAddress.toLowerCase() === attestation.attester.toLowerCase()
+    )
+
+    const formattedAttestTimestamp = new Date(
+      attestation.attestTimestamp
+    ).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+
+    const formattedDonationTime = matchedData
+      ? new Date(matchedData.timeStamp).toLocaleString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+      : "N/A"
+
+    return {
+      ...attestation,
+      data: {
+        ...attestation.data,
+        Amount: matchedData
+          ? ethers.utils.formatEther(matchedData.Amount)
+          : "N/A",
+        timeStamp: formattedDonationTime,
+        campaignId: matchedData
+          ? matchedData.campaignId
+          : attestation.data.campaignId || "N/A",
+      },
+    }
+  })
+
+  const displayedData = mergedData.slice((currentPage - 1) * 8, currentPage * 8)
 
   return (
     <div className="w-full max-w-[70vw] mx-auto p-4 min-h-[47vh]">
@@ -121,29 +175,31 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
         >
           <thead>
             <tr className="bg-[var(--Bg)] text-[var(--primary)]">
-              <th className="px-6 py-4 text-left">Attester</th>
+              <th className="px-6 py-4 text-left">Attester/Donor</th>
               <th className="px-6 py-4 text-left">Timestamp</th>
-              <th className="px-6 py-4 text-left">Campaign ID</th>
+              <th className="px-2   py-4 text-center">Campaign ID</th>
 
-              <th className="px-6 py-4 text-left">Amount (ETH)</th>
+              <th className="px-6 py-4 text-center">Amount (ETH)</th>
+              <th className="px-6 py-4 text-center">Donation Time</th>
             </tr>
           </thead>
-          <tbody className="bg-[var(--Bg)] text-[var(--secondary)] font-medium">
+          <tbody className="bg-[var(--Bg)] text-[var(--secondary)] font-medium ">
             {displayedData.map((attestation, index) => (
               <tr
                 key={index}
-                className="border-t border-[var(--primary)] font-bold"
+                className="border-t border-[var(--primary)] font-bold  "
               >
-                <td className="px-6 py-4">{attestation.attester}</td>
+                <td className="px-6 py-4 ">{attestation.attester}</td>
                 <td className="px-6 py-4">{attestation.attestTimestamp}</td>
-                <td className="px-6 py-4">
+                <td className=" py-4  text-center ">
                   {attestation.data.campaignId || "N/A"}
                 </td>
 
-                <td className="px-6 py-4">
-                  {attestation.data.Amount
-                    ? ethers.utils.formatEther(attestation.data.Amount)
-                    : "N/A"}
+                <td className="  py-4  text-center">
+                  {attestation.data.Amount}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  {attestation.data.timeStamp}
                 </td>
               </tr>
             ))}

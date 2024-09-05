@@ -9,7 +9,7 @@ import { toast } from "react-toastify"
 import { AttestationTable } from "../Components/Common/Table"
 import { ethers } from "ethers"
 import { ThreeDots } from "react-loader-spinner"
-
+import { decodeAbiParameters } from "viem"
 interface Attestation {
   id: string
   attester: string
@@ -22,56 +22,42 @@ interface Attestation {
   }
 }
 
+interface AttestationData {
+  campaignId: string
+  donorAddress: string
+  Amount: bigint
+  timeStamp: string
+}
+
 const AttestationPage: NextPage = () => {
-  const { address } = useAccount()
-  const { data: walletClient } = useWalletClient()
   const [loading, setLoading] = useState(false)
-  const [campaignId, setCampaignId] = useState("")
-  const [amount, setAmount] = useState("")
+
   const [attestations, setAttestations] = useState<Attestation[]>([])
+  const [dataObject, setDataObject] = useState<AttestationData[]>([])
+
+  const fetchAndDecodeAttestationData = async (attestations: any) => {
+    const decodedObjects: AttestationData[] = []
+    for (const att of attestations) {
+      if (!att.data) continue
+
+      const data = decodeAbiParameters(
+        att.dataLocation === "onchain" ? att.schema.data : [{ type: "string" }],
+        att.data
+      )
+
+      const obj: any = {}
+      data.forEach((item: any, i: number) => {
+        obj[att.schema.data[i].name] = item
+      })
+      decodedObjects.push(obj)
+    }
+    setDataObject(decodedObjects)
+    console.log("decodedObjects", decodedObjects)
+  }
 
   const queryAttestations = async () => {
     setLoading(true)
     try {
-      const indexService = new IndexService("testnet")
-      // const res = await indexService.querySchemaList({
-      //   id: "onchain_evm_11155111_0x6a",
-      //   mode: "onchain",
-      //   page: 1,
-      //   size: 100,
-      // })
-
-      const res = await indexService.queryAttestationList({
-        id: "",
-        schemaId: "onchain_evm_11155111_0x6a",
-        attester: "",
-        page: 1,
-        mode: "onchain",
-        indexingValue: "",
-      })
-
-      console.log("res", res)
-      // const abi = [
-      //   "tuple(string campaignId, address donorAddress, uint256 Amount, string timeStamp)",
-      // ]
-
-      // // Encoded data (the one you want to decode)
-      // const Data =
-      //   "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000033232320000000000000000000000000000000000000000000000000000000000"
-
-      // // Define the type array for decoding
-      // const types = ["string", "address", "uint256", "string"]
-
-      // // Decode the data
-      // const decodedData = ethers.utils.defaultAbiCoder.decode(types, Data)
-
-      // console.log("DECODED DATA ", {
-      //   campaignId: decodedData.campaignId,
-      //   donorAddress: decodedData.donorAddress,
-      //   Amount: ethers.utils.formatEther(decodedData.Amount), // Convert Amount from wei to ETH
-      //   timeStamp: decodedData.timeStamp,
-      // })
-
       const url = `https://testnet-rpc.sign.global/api/scan/attestations?schemaId=onchain_evm_11155111_0x6a&size=100`
       const response = await fetch(url)
       const data = await response.json()
@@ -107,86 +93,28 @@ const AttestationPage: NextPage = () => {
   }
 
   useEffect(() => {
+    const fetchData = async () => {
+      const indexService = new IndexService("testnet")
+      const res = await indexService.queryAttestationList({
+        id: "",
+        schemaId: "onchain_evm_11155111_0x6a",
+        attester: "",
+        page: 1,
+        mode: "onchain",
+        indexingValue: "",
+      })
+
+      await fetchAndDecodeAttestationData(res?.rows)
+    }
     queryAttestations()
+    fetchData()
   }, [])
-
-  const createAttestation = async () => {
-    console.log("createAttestation started")
-    if (!address) {
-      toast.error("Please connect your wallet first.")
-      return
-    }
-
-    if (!campaignId || !amount) {
-      toast.error("Please enter both campaign ID and amount.")
-      return
-    }
-
-    setLoading(true)
-    try {
-      const client = new SignProtocolClient(SpMode.OnChain, {
-        chain: EvmChains.sepolia,
-        walletClient: walletClient!,
-      })
-
-      const attestationResult = await client.createAttestation({
-        schemaId: "0x6a",
-        data: {
-          campaignId: campaignId,
-          donorAddress: address,
-          Amount: parseEther(amount),
-          timeStamp: new Date().toISOString(),
-        },
-        indexingValue: address.toLowerCase(),
-      })
-
-      console.log("Attestation created:", attestationResult)
-
-      toast.success(
-        `Donation attestation created successfully! ID: ${attestationResult.attestationId}`
-      )
-      setCampaignId("")
-      setAmount("")
-
-      await queryAttestations()
-    } catch (error) {
-      console.error("Error creating attestation:", error)
-
-      toast.error("Failed to create attestation. Check console for details.")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="p-6">
       <h1 className="text-3xl font-semibold text-[var(--primary)] mb-6">
         Donation Tracker
       </h1>
-
-      {/* <div className="mt-4">
-        <input
-          type="text"
-          placeholder="Campaign ID"
-          value={campaignId}
-          onChange={e => setCampaignId(e.target.value)}
-          className="p-2 border rounded mr-2"
-        />
-        <input
-          type="number"
-          placeholder="Amount in ETH"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          className="p-2 border rounded mr-2"
-        />
-        <button
-          onClick={createAttestation}
-          disabled={loading || !address || !campaignId || !amount}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-        >
-          {loading ? "Creating Attestation..." : "Create Donation Attestation"}
-        </button> 
-      </div>*/}
 
       <div>
         {loading ? (
@@ -204,7 +132,7 @@ const AttestationPage: NextPage = () => {
             />
           </div>
         ) : (
-          <AttestationTable tableData={attestations} />
+          <AttestationTable tableData={attestations} dataObject={dataObject} />
         )}
       </div>
     </div>
