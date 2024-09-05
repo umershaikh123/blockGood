@@ -3,8 +3,9 @@ import { donationTableDataType } from "../../constants/tableData"
 import { ethers } from "ethers"
 import Link from "next/link"
 import { useAccount } from "wagmi"
-import getConfig from "next/config"
+
 import { getChainConfig } from "../../constants/chainConfig"
+
 const DonationHistoryTable = ({
   tableData,
 }: {
@@ -128,8 +129,7 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
-  console.error(" tableData", tableData)
-  console.log("dataObject Table", dataObject)
+
   const combinedData = tableData.map((item, index) => ({
     ...item,
     transactionHash: txHashes[index],
@@ -207,7 +207,13 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
                 key={index}
                 className="border-t border-[var(--primary)] font-bold  "
               >
-                <td className="px-2 py-4    ">{attestation.attester}</td>
+                <td
+                  className="px-2 py-4  text-ellipsis  max-w-[3rem] overflow-clip "
+                  title={attestation.attester}
+                >
+                  {attestation.attester}
+                </td>
+
                 <td className="px-6 py-4 text-center">
                   {attestation.attestTimestamp}
                 </td>
@@ -222,13 +228,16 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
                   {attestation.data.timeStamp}
                 </td>
 
-                <td className="px-6 py-4 text-center text-ellipsis   ">
+                <td
+                  className="px-6 py-4 text-center text-ellipsis max-w-[3rem] overflow-clip "
+                  title={attestation.transactionHash}
+                >
                   <Link
                     href={`${blockexplorer}/tx/${attestation.transactionHash}`}
                     target="_blank"
-                    className="hover:text-[var(--primary)]  transition-all duration-300 ease-in-out"
+                    className="hover:text-[var(--primary)]  transition-all duration-300 ease-in-out "
                   >
-                    {attestation.transactionHash.substring(0, 12)}...
+                    {attestation.transactionHash}...
                   </Link>
                 </td>
               </tr>
