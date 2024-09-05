@@ -14,6 +14,7 @@ interface Attestation {
   id: string
   attester: string
   attestTimestamp: string
+  transactionHash?: string
   data: {
     campaignId?: string
     donorAddress?: string
@@ -34,6 +35,7 @@ const AttestationPage: NextPage = () => {
 
   const [attestations, setAttestations] = useState<Attestation[]>([])
   const [dataObject, setDataObject] = useState<AttestationData[]>([])
+  const [transactionHashes, setTransactionHashes] = useState<string[]>([])
 
   const fetchAndDecodeAttestationData = async (attestations: any) => {
     const decodedObjects: AttestationData[] = []
@@ -70,6 +72,7 @@ const AttestationPage: NextPage = () => {
           } catch (error) {
             console.error("Error parsing attestation data:", error)
           }
+
           return {
             id: row.id,
             attester: row.attester,
@@ -79,6 +82,7 @@ const AttestationPage: NextPage = () => {
             data: parsedData,
           }
         })
+        console.log("formattedAttestations", formattedAttestations)
         setAttestations(formattedAttestations)
       } else {
         console.error("API request was not successful:", data.message)
@@ -95,6 +99,7 @@ const AttestationPage: NextPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       const indexService = new IndexService("testnet")
+
       const res = await indexService.queryAttestationList({
         id: "",
         schemaId: "onchain_evm_11155111_0x6a",
@@ -103,6 +108,14 @@ const AttestationPage: NextPage = () => {
         mode: "onchain",
         indexingValue: "",
       })
+
+      if (res?.rows) {
+        // Extract transaction hashes from each row
+        const hashes = res.rows.map(row => row.transactionHash)
+        console.log("hashes ", hashes)
+        // Update state with extracted hashes
+        setTransactionHashes(hashes)
+      }
 
       await fetchAndDecodeAttestationData(res?.rows)
     }
@@ -132,7 +145,11 @@ const AttestationPage: NextPage = () => {
             />
           </div>
         ) : (
-          <AttestationTable tableData={attestations} dataObject={dataObject} />
+          <AttestationTable
+            tableData={attestations}
+            dataObject={dataObject}
+            txHashes={transactionHashes}
+          />
         )}
       </div>
     </div>

@@ -1,6 +1,10 @@
 import React, { useState } from "react"
 import { donationTableDataType } from "../../constants/tableData"
 import { ethers } from "ethers"
+import Link from "next/link"
+import { useAccount } from "wagmi"
+import getConfig from "next/config"
+import { getChainConfig } from "../../constants/chainConfig"
 const DonationHistoryTable = ({
   tableData,
 }: {
@@ -93,6 +97,7 @@ interface Attestation {
     Amount?: string
     timeStamp?: string
   }
+  transactionHash?: string
 }
 
 interface AttestationData {
@@ -100,27 +105,37 @@ interface AttestationData {
   donorAddress: string
   Amount: bigint
   timeStamp: string
+  transactionHash?: string
 }
 
 interface AttestationTableProps {
   tableData: Attestation[]
   dataObject: AttestationData[]
+  txHashes: string[]
 }
 
 export const AttestationTable: React.FC<AttestationTableProps> = ({
   tableData,
   dataObject,
+  txHashes,
 }) => {
+  const { chain: networkChain, address } = useAccount()
+  const chainConfig = getChainConfig(networkChain?.id || 11155111)
+  const blockexplorer = chainConfig.blockExplorers.default.url
   const [currentPage, setCurrentPage] = useState(1)
   const totalPages = Math.ceil(tableData.length / 5)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
-
+  console.error(" tableData", tableData)
   console.log("dataObject Table", dataObject)
+  const combinedData = tableData.map((item, index) => ({
+    ...item,
+    transactionHash: txHashes[index], // Add the transaction hash from txHashes
+  }))
 
-  const mergedData = tableData.map(attestation => {
+  const mergedData = combinedData.map(attestation => {
     const matchedData = dataObject.find(
       data =>
         data.donorAddress.toLowerCase() === attestation.attester.toLowerCase()
@@ -150,6 +165,8 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
 
     return {
       ...attestation,
+      transactionHash: attestation.transactionHash,
+      attestTimestamp: formattedAttestTimestamp,
       data: {
         ...attestation.data,
         Amount: matchedData
@@ -166,7 +183,7 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
   const displayedData = mergedData.slice((currentPage - 1) * 8, currentPage * 8)
 
   return (
-    <div className="w-full max-w-[70vw] mx-auto p-4 min-h-[47vh]">
+    <div className=" w-full mx-auto p-4 min-h-[47vh]">
       {/* Table */}
       <div className="overflow-x-auto shadow-sm">
         <table
@@ -175,12 +192,13 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
         >
           <thead>
             <tr className="bg-[var(--Bg)] text-[var(--primary)]">
-              <th className="px-6 py-4 text-left">Attester/Donor</th>
-              <th className="px-6 py-4 text-left">Timestamp</th>
+              <th className="px-6   w-fit py-4 text-left">Attester/Donor</th>
+              <th className="px-6 py-4 text-center">Timestamp</th>
               <th className="px-2   py-4 text-center">Campaign ID</th>
 
               <th className="px-6 py-4 text-center">Amount (ETH)</th>
               <th className="px-6 py-4 text-center">Donation Time</th>
+              <th className="px-6 py-4 text-center">Tx Hash</th>
             </tr>
           </thead>
           <tbody className="bg-[var(--Bg)] text-[var(--secondary)] font-medium ">
@@ -189,8 +207,10 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
                 key={index}
                 className="border-t border-[var(--primary)] font-bold  "
               >
-                <td className="px-6 py-4 ">{attestation.attester}</td>
-                <td className="px-6 py-4">{attestation.attestTimestamp}</td>
+                <td className="px-2 py-4    ">{attestation.attester}</td>
+                <td className="px-6 py-4 text-center">
+                  {attestation.attestTimestamp}
+                </td>
                 <td className=" py-4  text-center ">
                   {attestation.data.campaignId || "N/A"}
                 </td>
@@ -200,6 +220,16 @@ export const AttestationTable: React.FC<AttestationTableProps> = ({
                 </td>
                 <td className="px-6 py-4 text-center">
                   {attestation.data.timeStamp}
+                </td>
+
+                <td className="px-6 py-4 text-center text-ellipsis   ">
+                  <Link
+                    href={`${blockexplorer}/tx/${attestation.transactionHash}`}
+                    target="_blank"
+                    className="hover:text-[var(--primary)]  transition-all duration-300 ease-in-out"
+                  >
+                    {attestation.transactionHash.substring(0, 12)}...
+                  </Link>
                 </td>
               </tr>
             ))}
