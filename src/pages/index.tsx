@@ -324,6 +324,7 @@ const Home: NextPage = () => {
             admin={false}
             donationData={donationData}
             isIndividual={isIndividual}
+            campaignData={selectedCampaign}
             handleDonationOpen={handleDonationOpen}
             handleDrawerClose={handleDrawerClose}
             raisedValue={
@@ -335,7 +336,6 @@ const Home: NextPage = () => {
             LeftValue={BigNumber.from(0)}
             campaignID={selectedCampaign.campaignId || "0"}
             Description={selectedCampaign.description || "null"}
-            socialLink={"/"}
             title={selectedCampaign.title || "null"}
             BgImage={selectedCampaign.coverImage}
           />

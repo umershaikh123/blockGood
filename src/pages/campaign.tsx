@@ -448,6 +448,7 @@ const campaign = () => {
             admin={true}
             donationData={donationData}
             isIndividual={isIndividual}
+            campaignData={selectedCampaign}
             handleDonationOpen={() => {}}
             handleDrawerClose={handleDrawerClose}
             raisedValue={
@@ -459,7 +460,6 @@ const campaign = () => {
             LeftValue={BigNumber.from(0)}
             campaignID={selectedCampaign.campaignId || "0"}
             Description={selectedCampaign.description || "null"}
-            socialLink={"/"}
             title={selectedCampaign.title || "null"}
             BgImage={selectedCampaign.coverImage}
           />

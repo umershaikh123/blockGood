@@ -8,7 +8,7 @@ import { Gauge, gaugeClasses } from "@mui/x-charts/Gauge"
 import ProgressBar from "../../Components/Common/ProgressBar"
 import ForumIcon from "@mui/icons-material/Forum"
 import { StatCard } from "../../Components/Common/Card"
-
+import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
 import Box from "@mui/material/Box"
 
 import { Close, Description } from "@mui/icons-material"
@@ -22,6 +22,11 @@ import { calculateCampaignProgress } from "../../util"
 import { BigNumber } from "ethers"
 
 import "react-toastify/dist/ReactToastify.css"
+import { CampaignType } from "../../types/campaign"
+import { getChainConfig, getContractAddress } from "../../constants/chainConfig"
+
+import { useAccount } from "wagmi"
+import { Dialog } from "@mui/material"
 
 const drawerTabsProps = [
   {
@@ -48,10 +53,11 @@ interface DrawerContentProps {
   LeftValue: BigNumber
   Description: string
   admin: boolean
-  socialLink: string
+
   BgImage: string
   donationData: any
   campaignID: string
+  campaignData?: CampaignType
 }
 
 export function DrawerContent({
@@ -59,17 +65,24 @@ export function DrawerContent({
   handleDonationOpen,
   title,
   isIndividual,
+  campaignData,
   raisedValue,
   GoalValue,
   LeftValue,
   Description,
   admin,
-  socialLink,
+
   BgImage,
   donationData,
   campaignID,
 }: DrawerContentProps) {
-  const [tableData, setTableData] = useState(donationData)
+  // campaignData.creator
+
+  const { chain: networkChain, address } = useAccount()
+  const [organizationData, setOrganizationData] = useState<any>(null)
+  const [individualData, setIndividualData] = useState<any>(null)
+  const [open, setOpen] = useState(false)
+  const [currentImage, setCurrentImage] = useState<string | null>(null)
   const donations = donationData?.DonationTracker_DonationReceived || []
   const formattedDonationData = donations
     .filter((donation: any) => donation.campaignId === campaignID)
@@ -79,6 +92,56 @@ export function DrawerContent({
     }))
   console.log("formattedDonationData", formattedDonationData)
 
+  const chainConfig = getChainConfig(networkChain?.id || 11155111)
+  const provider = new ethers.providers.JsonRpcProvider(
+    chainConfig.rpcUrls.public.http[0]
+  )
+
+  const chainId = networkChain?.id || 11155111
+  const contractAddress = getContractAddress(chainId)
+  const donationContract = new ethers.Contract(
+    contractAddress,
+    donationTrackerAbi,
+    provider
+  )
+
+  useEffect(() => {
+    if (campaignData) {
+      fetchCampaignDetails()
+    }
+  }, [campaignData])
+
+  const fetchCampaignDetails = async () => {
+    try {
+      if (campaignData) {
+        // Fetch organization data
+        const organizationDetails = await donationContract.organizations(
+          campaignData.creator
+        )
+        setOrganizationData(organizationDetails)
+
+        // Fetch individual data
+        const individualDetails = await donationContract.individuals(
+          campaignData.creator
+        )
+        setIndividualData(individualDetails)
+
+        console.log("Organization Details:", organizationDetails)
+        console.log("Individual Details:", individualDetails)
+      }
+    } catch (error: any) {
+      console.error("Error fetching campaign details:", error.message)
+    }
+  }
+  const handleImageClick = (imageSrc: string) => {
+    setCurrentImage(imageSrc)
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setCurrentImage(null)
+  }
   const progress = calculateCampaignProgress({
     raisedValue: raisedValue,
     goalValue: GoalValue,
@@ -117,9 +180,29 @@ export function DrawerContent({
             className=" rounded-xl"
           />
         </div>
-        {/* <div className="flex justify-center items-center my-4">
-            <ImageRowComponent />
-          </div> */}
+        {isIndividual === false && organizationData && (
+          <>
+            <img
+              src={organizationData.registrationProof}
+              width={100}
+              height={100}
+              alt="Organization proof"
+              className=" rounded-xl"
+              onClick={() =>
+                handleImageClick(organizationData.registrationProof)
+              }
+            />
+          </>
+        )}
+
+        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+          <Box
+            component="img"
+            src={currentImage || ""}
+            alt="Selected Image"
+            sx={{ width: "100%", height: "auto" }}
+          />
+        </Dialog>
 
         <div className="flex justify-between    items-center my-4 w-full">
           <h1 className="text-3xl font-semibold max-w-[32vw]  w-11/12  ">
@@ -220,9 +303,9 @@ export function DrawerContent({
               <>
                 <Details
                   description={Description}
-                  xLink={socialLink}
-                  InstaLink="/"
-                  FaceBookLink="/"
+                  individualData={individualData}
+                  OrganizationData={organizationData}
+                  isIndividual={isIndividual}
                 />
               </>
             }
