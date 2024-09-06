@@ -27,6 +27,7 @@ import { getChainConfig, getContractAddress } from "../../constants/chainConfig"
 
 import { useAccount } from "wagmi"
 import { Dialog } from "@mui/material"
+import WithdrawalsComponent from "./Withdrawal"
 
 const drawerTabsProps = [
   {
@@ -316,7 +317,13 @@ export function DrawerContent({
                 )}
               </>
             }
-            component3={<div className="min-h-[30vh]"></div>}
+            component3={
+              <>
+                {campaignID && (
+                  <WithdrawalsComponent campaignId={campaignData?.campaignId} />
+                )}
+              </>
+            }
             maxWidth="max-w-[32rem]"
           />
         </div>
