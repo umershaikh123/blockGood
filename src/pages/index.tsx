@@ -79,7 +79,7 @@ const Home: NextPage = () => {
   const [openDrawer, setOpenDrawer] = React.useState(false)
   const { chain: networkChain, address } = useAccount()
 
-  const { error, data } = useQuery(GET_CAMPAIGN_IDS)
+  const { error, data, refetch } = useQuery(GET_CAMPAIGN_IDS)
   const { data: donationData } = useQuery(GET_DONATION_RECIEVED)
 
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
@@ -290,7 +290,7 @@ const Home: NextPage = () => {
   }
 
   return (
-    <div className="flex flex-col relative ">
+    <div className="flex flex-col relative  pb-16">
       <h1 className=" text-3xl text-[var(--secondary)]   font-bold">
         Campaigns
       </h1>
@@ -310,7 +310,7 @@ const Home: NextPage = () => {
         open={campaignPopUpOpen}
         onClick={handleCampaignClose}
       >
-        <CampaignPopup handleClose={handleCampaignClose} />
+        <CampaignPopup handleClose={handleCampaignClose} refetch={refetch} />
       </Backdrop>
 
       <Drawer

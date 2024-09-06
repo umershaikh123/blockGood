@@ -35,6 +35,8 @@ import "tippy.js/animations/scale.css"
 import "tippy.js/themes/translucent.css"
 
 import { config } from "../../wagmi"
+import { useMutation, useQuery } from "@apollo/client"
+import { GET_CAMPAIGN_IDS } from "../../util/Queries"
 const DonationPopup = ({
   handleClose,
   handleDonate,
@@ -839,9 +841,16 @@ export const RegisterIndividualPopup = ({
   )
 }
 
-export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
+export const CampaignPopup = ({
+  handleClose,
+  refetch,
+}: {
+  handleClose: () => void
+  refetch: any
+}) => {
   const { chain: networkChain, isConnected, address } = useAccount()
   const [requiredFee, setRequiredFee] = React.useState<string>("0")
+
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -1176,7 +1185,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           autoClose: 7000,
         }
       )
-
+      refetch()
       handleClose()
     } catch (error: any) {
       toast.update(pendingToastId, {

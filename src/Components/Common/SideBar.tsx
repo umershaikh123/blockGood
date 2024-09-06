@@ -41,18 +41,18 @@ const sidebarItemsTop = [
 ]
 
 const sidebarItemsBottom = [
-  {
-    text: "Notification",
-    icon: (
-      <NotificationsIcon sx={{ color: "var(--primary)" }} fontSize="large" />
-    ),
-    link: "/notification",
-  },
-  {
-    text: "Profile",
-    icon: <PersonIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
-    link: "/profile",
-  },
+  // {
+  //   text: "Notification",
+  //   icon: (
+  //     <NotificationsIcon sx={{ color: "var(--primary)" }} fontSize="large" />
+  //   ),
+  //   link: "/notification",
+  // },
+  // {
+  //   text: "Profile",
+  //   icon: <PersonIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
+  //   link: "/profile",
+  // },
   {
     text: "Settings",
     icon: <SettingsIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
