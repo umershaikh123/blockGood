@@ -62,9 +62,13 @@ contract CampaignEnhancer {
     address private owner;
     IOracle public oracle;
 
-    event RequestCreated(uint256 indexed requestId, address indexed requester);
+    event RequestCreated(uint256 indexed requestId, address indexed requester, string originalDescription);
+    event DescriptionEnhancementStarted(uint256 indexed requestId);
     event DescriptionEnhanced(uint256 indexed requestId, string enhancedDescription);
+    event ImageGenerationStarted(uint256 indexed requestId);
     event CoverImageGenerated(uint256 indexed requestId, string imageUrl);
+    event OracleAddressUpdated(address newOracleAddress);
+    event ErrorOccurred(uint256 indexed requestId, string errorMessage);
 
     constructor(address _oracleAddress) {
         owner = msg.sender;
@@ -83,6 +87,7 @@ contract CampaignEnhancer {
 
     function setOracleAddress(address newOracleAddress) public onlyOwner {
         oracle = IOracle(newOracleAddress);
+        emit OracleAddressUpdated(newOracleAddress);
     }
 
     function enhanceDescription(string memory description) public returns (uint256) {
@@ -96,12 +101,16 @@ contract CampaignEnhancer {
             imageGenerated: false
         });
 
+        emit RequestCreated(requestId, msg.sender, description);
+
         IOracle.GroqRequest memory request = getGroqLlmConfig();
         try oracle.createGroqLlmCall(requestId, request) returns (uint256) {
-            emit RequestCreated(requestId, msg.sender);
+            emit DescriptionEnhancementStarted(requestId);
         } catch Error(string memory reason) {
+            emit ErrorOccurred(requestId, string(abi.encodePacked("Oracle call failed: ", reason)));
             revert(string(abi.encodePacked("Oracle call failed: ", reason)));
         } catch (bytes memory) {
+            emit ErrorOccurred(requestId, "Oracle call failed");
             revert("Oracle call failed");
         }
 
@@ -118,10 +127,12 @@ contract CampaignEnhancer {
         string memory imagePrompt = string(abi.encodePacked("Generate a cover image for a campaign with the following description: ", enhancementRequests[requestId].enhancedDescription));
         
         try oracle.createFunctionCall(requestId, "image_generation", imagePrompt) returns (uint256) {
-            emit RequestCreated(requestId, msg.sender);
+            emit ImageGenerationStarted(requestId);
         } catch Error(string memory reason) {
+            emit ErrorOccurred(requestId, string(abi.encodePacked("Oracle call failed: ", reason)));
             revert(string(abi.encodePacked("Oracle call failed: ", reason)));
         } catch (bytes memory) {
+            emit ErrorOccurred(requestId, "Oracle call failed");
             revert("Oracle call failed");
         }
     }
@@ -138,7 +149,7 @@ contract CampaignEnhancer {
             request.descriptionEnhanced = true;
             emit DescriptionEnhanced(requestId, response.content);
         } else {
-            emit DescriptionEnhanced(requestId, errorMessage);
+            emit ErrorOccurred(requestId, errorMessage);
         }
     }
 
@@ -154,7 +165,7 @@ contract CampaignEnhancer {
             request.imageGenerated = true;
             emit CoverImageGenerated(requestId, response);
         } else {
-            emit CoverImageGenerated(requestId, errorMessage);
+            emit ErrorOccurred(requestId, errorMessage);
         }
     }
 
@@ -184,8 +195,8 @@ contract CampaignEnhancer {
             responseFormat: "{\"type\":\"text\"}",
             seed: 0,
             stop: "",
-            temperature: 7,  
-            topP: 100,  
+            temperature: 7,  // 0.7
+            topP: 100,  // 1.0
             user: ""
         });
     }

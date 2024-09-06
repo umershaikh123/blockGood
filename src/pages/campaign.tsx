@@ -384,7 +384,7 @@ const campaign = () => {
         isLoading: false,
       })
     } finally {
-      window.location.reload()
+      // window.location.reload()
     }
   }
 

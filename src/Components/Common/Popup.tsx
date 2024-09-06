@@ -850,7 +850,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
     aiImageurl: "",
     destinationChainSelector: "",
   })
-
+  const [requestId, setRequestId] = useState<number>(0)
   const { switchChainAsync } = useSwitchChain({
     config,
   })
@@ -964,27 +964,62 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         signer
       )
 
-      toast.info("Generating Description ...")
       console.log("title", title)
       const tx = await galadrielContract.enhanceDescription(title)
-      await tx.wait()
 
-      console.log("tx", tx)
-      const aiDescription = await galadrielContract.getEnhancedDescription(tx)
+      const receipt = await tx.wait(9)
+      console.log("receipt ", receipt)
+      const event = receipt.events?.find(
+        (event: any) => event.event === "RequestCreated"
+      )
+      const delay = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms))
+      let eventRequestId
+      if (event) {
+        // const requestId = event.args?.[0] // The first argument is the requestId
+        eventRequestId = event.args?.[0]
+
+        console.log("Request ID.toString():", eventRequestId.toString())
+        setRequestId(eventRequestId.toString())
+      } else {
+        console.error("RequestCreated event not found")
+      }
+
+      toast.info("Generating Description ...")
+      await delay(6000)
+      console.error("requestId ", eventRequestId.toString())
+      const reqStatus = await galadrielContract.getRequestStatus(
+        eventRequestId.toString()
+      )
+      console.error("reqStatues ", reqStatus)
+
+      await delay(6000)
+      const aiDescription = await galadrielContract.getEnhancedDescription(
+        eventRequestId.toString()
+      )
+
+      console.log("aiDescription ", aiDescription)
 
       setFormValues(prevValues => ({
         ...prevValues,
         description: aiDescription,
       }))
-      // await galadrielContract.enhanceCoverImage(requestId)
 
-      // toast.info("Generating Image ...")
-      // const aiImageURL = await galadrielContract.getCoverImageUrl(requestId)
-
-      // setFormValues(prevValues => ({
-      //   ...prevValues,
-      //   aiImageurl: aiImageURL,
-      // }))
+      const tx2 = await galadrielContract.enhanceCoverImage(
+        eventRequestId.toString()
+      )
+      await tx2.wait(16)
+      await delay(20000)
+      toast.info("Generating Image ...")
+      console.log(" eventRequestId.toString()", eventRequestId.toString())
+      const aiImageURL = await galadrielContract.getCoverImageUrl(
+        eventRequestId.toString()
+      )
+      console.log("aiImageURL", aiImageURL)
+      setFormValues(prevValues => ({
+        ...prevValues,
+        aiImageurl: aiImageURL,
+      }))
 
       toast.update(pendingToastId, {
         render: "Tx successfull!",
@@ -1021,9 +1056,18 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
       destinationChainSelector,
     })
 
-    if (!title || !description || !goal || !coverImage) {
+    if (!title || !description || !goal || (!coverImage && !aiImageurl)) {
       console.error("Missing required fields")
       toast.error("Please fill in all fields")
+      return
+    }
+
+    try {
+      if (networkChain?.id === 696969) {
+        await switchChainAsync({ chainId: 11155111 })
+      }
+    } catch (error) {
+      console.log("User rejected Tx", error)
       return
     }
 
@@ -1040,10 +1084,14 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
       if (aiImageurl) {
         coverImageUrl = aiImageurl
       } else {
-        coverImageUrl = await uploadImageToIPFS(coverImage)
+        if (coverImage) {
+          coverImageUrl = await uploadImageToIPFS(coverImage)
+        } else {
+          coverImageUrl = "null"
+        }
       }
 
-      console.log("Uploading image to IPFS...")
+      // console.log("Uploading image to IPFS...")
       // const coverImageUrl = await uploadImageToIPFS(coverImage)
 
       console.log("Image uploaded, URL:", coverImageUrl)
@@ -1139,7 +1187,7 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
         isLoading: false,
       })
     } finally {
-      window.location.reload()
+      // window.location.reload()
     }
   }
 
@@ -1317,20 +1365,6 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
           fullWidth
         />
 
-        {formValues.aiImageurl ? (
-          <img
-            src={formValues.aiImageurl}
-            alt="AI Generated Cover"
-            style={{ maxWidth: "100%", marginTop: "1rem" }}
-          />
-        ) : formValues.coverImage ? (
-          <img
-            src={URL.createObjectURL(formValues.coverImage)}
-            alt="Uploaded Cover"
-            style={{ maxWidth: "100%", marginTop: "1rem" }}
-          />
-        ) : null}
-
         {/* Remove the TextField for destinationChainSelector and replace it with a read-only display */}
         <div className="mb-4 max-w-[25rem] w-full">
           <div className="flex flex-col">
@@ -1405,6 +1439,32 @@ export const CampaignPopup = ({ handleClose }: { handleClose: () => void }) => {
             </Button>
           </Tippy>
         </div>
+
+        {formValues.aiImageurl ? (
+          <div className=" mx-16 my-4 ">
+            <img
+              src={formValues.aiImageurl}
+              alt="AI Generated Cover"
+              style={{
+                maxWidth: "100%",
+                marginTop: "1rem",
+                borderRadius: "2rem",
+              }}
+            />
+          </div>
+        ) : formValues.coverImage ? (
+          <div className=" mx-16 my-4 ">
+            <img
+              src={URL.createObjectURL(formValues.coverImage)}
+              alt="Uploaded Cover"
+              style={{
+                maxWidth: "100%",
+                marginTop: "1rem",
+                borderRadius: "2rem",
+              }}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )

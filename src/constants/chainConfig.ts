@@ -152,4 +152,4 @@ export const getContractAddress = (chainId: number): string => {
 }
 
 export const galadrielContractAddress =
-  "0x1cf52A8D389b6821bf53e5c2787DA872d56dB1F1"
+  "0x83eb14Ff452E5E2139773e58d1129820304CaCb2"
