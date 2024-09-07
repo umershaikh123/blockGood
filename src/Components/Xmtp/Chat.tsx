@@ -21,6 +21,11 @@ import makeBlockie from "ethereum-blockies-base64"
 
 import { differenceInMilliseconds, formatDistanceToNowStrict } from "date-fns"
 import { Button, TextField } from "@mui/material"
+import { useRouter } from "next/router"
+import { toast, ToastContainer } from "react-toastify"
+import { ToastIcon } from "react-toastify/dist/types"
+import "react-toastify/dist/ReactToastify.css"
+import { CreateClientWithKeys } from "./CreateClientWithKeys"
 interface CreateClientProps {
   signer: Signer
 }
@@ -29,7 +34,7 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
   const { client, initialize } = useClient()
   const [messages, setMessages] = useState<DecodedMessage[]>([])
   const [newMessage, setNewMessage] = useState("")
-  const [peerAddress, setPeerAddress] = useState("")
+  const [peerAddress, setPeerAddress] = useState<string>("")
   const [isOnNetwork, setIsOnNetwork] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { address } = useAccount()
@@ -41,6 +46,17 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
   } = useConversations()
   const { canMessage } = useCanMessage()
   const { startConversation } = useStartConversation()
+
+  const router = useRouter()
+
+  const { creatorAddress } = router.query
+
+  useEffect(() => {
+    if (creatorAddress) {
+      //@ts-ignore
+      setPeerAddress(creatorAddress)
+    }
+  }, [creatorAddress])
 
   useEffect(() => {
     const initializeClient = async () => {
@@ -55,23 +71,33 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
 
   useEffect(() => {
     const fetchMessages = async () => {
-      if (client && peerAddress) {
-        const conversation = await client.conversations.newConversation(
-          peerAddress
-        )
+      try {
+        if (client && peerAddress) {
+          const conversation = await client.conversations.newConversation(
+            peerAddress
+          )
 
-        const allMessages = await conversation.messages()
-        setMessages(allMessages)
+          const allMessages = await conversation.messages()
+          setMessages(allMessages)
 
-        const stream = await conversation.streamMessages()
-        for await (const newMsg of stream) {
-          setMessages(prevMessages => [...prevMessages, newMsg])
+          const stream = await conversation.streamMessages()
+          for await (const newMsg of stream) {
+            setMessages(prevMessages => [...prevMessages, newMsg])
+          }
         }
+      } catch (error: any) {
+        toast.error("Recipient is not on the XMTP network")
+        console.log("could not fetch messages :", error)
       }
     }
 
     if (client) {
-      fetchMessages()
+      try {
+        fetchMessages()
+      } catch (error: any) {
+        toast.error("Recipient is not on the XMTP network")
+        console.log("could not fetch messages :", error)
+      }
     }
   }, [client, peerAddress])
 
@@ -80,13 +106,20 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
       e.preventDefault()
       if (isValidAddress(peerAddress) && newMessage) {
         setIsLoading(true)
-        const conversations = await startConversation(peerAddress, newMessage)
-        setIsLoading(false)
 
-        if (conversations && conversations.conversation?.peerAddress) {
-          setPeerAddress(conversations.conversation?.peerAddress)
+        try {
+          const conversations = await startConversation(peerAddress, newMessage)
 
-          setMessages([...(await conversations.conversation.messages())])
+          setIsLoading(false)
+
+          if (conversations && conversations.conversation?.peerAddress) {
+            setPeerAddress(conversations.conversation?.peerAddress)
+
+            setMessages([...(await conversations.conversation.messages())])
+          }
+        } catch (error: any) {
+          toast.error("Could not fetch messages")
+          console.log("could not fetch messages :", error)
         }
       }
     },
@@ -95,13 +128,18 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
 
   const handleCheckAddress = useCallback(
     async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (isValidAddress(peerAddress)) {
-        setIsLoading(true)
-        setIsOnNetwork(await canMessage(peerAddress))
-        setIsLoading(false)
-      } else {
-        setIsOnNetwork(false)
+      try {
+        e.preventDefault()
+        if (isValidAddress(peerAddress)) {
+          setIsLoading(true)
+          setIsOnNetwork(await canMessage(peerAddress))
+          setIsLoading(false)
+        } else {
+          setIsOnNetwork(false)
+        }
+      } catch (error: any) {
+        toast.error("address is not valid")
+        console.log("could not fetch messages :", error)
       }
     },
     [peerAddress, canMessage]
@@ -110,12 +148,11 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
     if (!address) return address
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
-  //   console.log("conversations", conversations)
-  //   console.log(" messages", messages)
 
   return (
     <div className="p-4 relative   ">
-      <CreateClient signer={signer} />
+      {/* <CreateClient signer={signer} /> */}
+      {address && <CreateClientWithKeys signer={signer} address={address} />}
       <div className="flex  ">
         <div className="border border-[var(--secondary)] flex flex-col  max-w-[22rem] h-[70vh] overflow-auto rounded-xl w-full">
           {isLoadingConversations && (
@@ -164,13 +201,13 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
             className="flex mb-2    justify-start items-center"
           >
             <div className="min-w-[44rem] w-fit items-center  rounded-lg flex   flex-col  justify-between  ">
-              <div>
+              {/* <div>
                 {!isOnNetwork && (
                   <div className="text-red-500 ml-4    ">
                     Address is not on the XMTP network.
                   </div>
                 )}
-              </div>
+              </div> */}
 
               <div className="min-w-[44rem] w-fit items-center  rounded-lg flex      justify-between  ">
                 <h1 className=" text-xl text-[var(--primary)] mr-4 ">To:</h1>

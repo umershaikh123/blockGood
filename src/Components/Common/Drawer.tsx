@@ -28,7 +28,8 @@ import { getChainConfig, getContractAddress } from "../../constants/chainConfig"
 import { useAccount } from "wagmi"
 import { Dialog } from "@mui/material"
 import WithdrawalsComponent from "./Withdrawal"
-
+// import { useRouter } from "next/navigation"
+import { useRouter } from "next/router"
 const drawerTabsProps = [
   {
     label: "Details",
@@ -91,7 +92,9 @@ export function DrawerContent({
       address: donation.donor,
       donation: ethers.utils.formatEther(donation.amount),
     }))
-  console.log("formattedDonationData", formattedDonationData)
+
+  const router = useRouter()
+  const creatorAddress = campaignData?.creator
 
   const chainConfig = getChainConfig(networkChain?.id || 11155111)
   const provider = new ethers.providers.JsonRpcProvider(
@@ -282,6 +285,10 @@ export function DrawerContent({
               }}
               onClick={() => {
                 console.log("chat button clicked")
+                router.push({
+                  pathname: "/chat",
+                  query: { creatorAddress },
+                })
               }}
             >
               Chat

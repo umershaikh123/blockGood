@@ -18,7 +18,7 @@ import clsx from "clsx"
 import Link from "next/link"
 import SettingsIcon from "@mui/icons-material/Settings"
 import Router from "next/router"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/router"
 
 const sidebarItemsTop = [
   {
@@ -64,10 +64,10 @@ const sidebarItemsBottom = [
 ]
 
 const CustomSidebar = () => {
-  // const router  =useRouter()
+  const router = useRouter()
 
   const [expanded, setExpanded] = useState(false)
-  const [activePage, setActivePage] = useState("/")
+  const activePage = router.pathname
   return (
     <div
       onMouseEnter={() => setExpanded(true)}
@@ -88,7 +88,7 @@ const CustomSidebar = () => {
             className={clsx("relative", activePage === item.link && "active")}
           >
             <Link href={item.link} className="w-full">
-              <ListItemButton onClick={() => setActivePage(item.link)}>
+              <ListItemButton>
                 <ListItemIcon className="text-white">{item.icon}</ListItemIcon>
                 {activePage === item.link && (
                   <div className="absolute left-1 top-0 h-full w-[4px] bg-[var(--primary)] rounded-lg"></div>
@@ -119,7 +119,7 @@ const CustomSidebar = () => {
             className={clsx("relative", activePage === item.link && "active")}
           >
             <Link href={item.link} className="w-full">
-              <ListItemButton onClick={() => setActivePage(item.link)}>
+              <ListItemButton>
                 {activePage === item.link && (
                   <div className="absolute left-1 top-0 h-full w-[4px] bg-[var(--primary)] rounded-lg"></div>
                 )}

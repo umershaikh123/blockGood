@@ -17,6 +17,7 @@ export const CreateClient: React.FC<CreateClientProps> = ({ signer }) => {
   const { client, error, isLoading, initialize } = useClient()
 
   const handleConnect = useCallback(async () => {
+    console.log("handleConnect clicked")
     const options: OptionType = {
       persistConversations: false,
       env: "dev",
@@ -75,7 +76,6 @@ export const CreateClient: React.FC<CreateClientProps> = ({ signer }) => {
   return (
     <Button
       variant="contained"
-      onClick={handleConnect}
       startIcon={
         <Image
           src={xmtpLogo}
