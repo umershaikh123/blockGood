@@ -21,8 +21,50 @@ import "react-toastify/dist/ReactToastify.css"
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client"
 import { graphClient } from "../util/graphClient"
 import { XMTPProvider } from "@xmtp/react-sdk"
-
+import { useState, useEffect } from "react"
 const client = new QueryClient()
+
+interface CustomTheme {
+  "--primary": string
+  "--secondary": string
+  "--Bg": string
+}
+// Def
+// Define themes with CSS variable values
+const themes: { [key: string]: CustomTheme } = {
+  ForestGreen: {
+    "--primary": "#283618",
+    "--secondary": "#606c38",
+    "--Bg": "#fefae0",
+  },
+
+  Turquoise: {
+    "--primary": "#073B4C",
+    "--secondary": "#118AB2",
+    "--Bg": "#06D6A0",
+  },
+  NavyNight: {
+    "--primary": "#003049",
+    "--secondary": "#034D73",
+    "--Bg": "#FDF0D5",
+  },
+  SkyBlue: {
+    "--primary": "#0077B6",
+    "--secondary": "#00B4D8",
+    "--Bg": "#CAF0F8",
+  },
+  PinkPeach: {
+    "--primary": "#FB6F92",
+    "--secondary": "#FF8FAB",
+    "--Bg": "#FFE5EC",
+  },
+
+  OrangePeel: {
+    "--primary": "#EF476F",
+    "--secondary": "#EF476F",
+    "--Bg": "#FFD166",
+  },
+}
 
 export const myTheme = merge(lightTheme(), {
   colors: {
@@ -35,6 +77,24 @@ export const myTheme = merge(lightTheme(), {
 } as Theme)
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("selectedTheme") || "ForestGreen"
+    }
+    return "ForestGreen"
+  })
+
+  useEffect(() => {
+    const root = document.documentElement
+    const themeVariables = themes[selectedTheme as keyof typeof themes]
+
+    for (const [key, value] of Object.entries(themeVariables)) {
+      root.style.setProperty(key, value)
+    }
+
+    localStorage.setItem("selectedTheme", selectedTheme)
+  }, [selectedTheme])
+
   return (
     <ReduxProvider store={store}>
       <XMTPProvider>

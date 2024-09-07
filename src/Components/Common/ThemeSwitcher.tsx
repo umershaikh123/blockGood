@@ -61,18 +61,6 @@ const ThemeSwitcher: React.FC = () => {
     localStorage.setItem("selectedTheme", selectedTheme)
   }, [selectedTheme])
 
-  //   useEffect(() => {
-  //     const root = document.documentElement
-  //     const themeVariables = themes[selectedTheme] // No need for type assertion
-
-  //     for (const [key, value] of Object.entries(themeVariables)) {
-  //       root.style.setProperty(key, value)
-  //     }
-
-  //     // Use optional chaining to safely access localStorage
-  //     localStorage?.setItem("selectedTheme", selectedTheme)
-  //   }, [selectedTheme])
-
   const handleThemeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedTheme(event.target.value)
   }
