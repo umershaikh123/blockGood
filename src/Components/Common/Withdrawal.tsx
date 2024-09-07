@@ -4,6 +4,7 @@ import { getChainConfig, getContractAddress } from "../../constants/chainConfig"
 import { useAccount } from "wagmi"
 import donationTrackerAbi from "../../contracts/abis/donationTracker.json"
 import { ThreeDots } from "react-loader-spinner"
+import { toast } from "react-toastify"
 interface Withdrawal {
   amount: string
   admin: string
@@ -53,7 +54,8 @@ const WithdrawalsComponent = ({ campaignId }: WithdrawalsComponentProps) => {
         )
 
         setWithdrawals(formattedData)
-      } catch (error) {
+      } catch (error: any) {
+        toast.error(`Error: ${error}`)
         console.error("Error fetching withdrawals:", error)
       } finally {
         setLoading(false)

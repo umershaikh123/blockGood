@@ -65,12 +65,6 @@ export const CampaignAttestationTable: React.FC<AttestationTableProps> = ({
     setCurrentPage(page)
   }
 
-  console.log("tableData , dataObject , txHashes", {
-    tableData,
-    dataObject,
-    txHashes,
-  })
-
   const combinedData = tableData.map((item, index) => ({
     ...item,
     transactionHash: txHashes[index],

@@ -48,7 +48,7 @@ const DonationPopup = ({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target
-    console.log("amount", amount)
+
     setAmount(value)
   }
 
@@ -221,7 +221,7 @@ export const UploadPOSPopup = ({
               toast.error("upload proofImage")
               return
             }
-            console.log("Uploading image to IPFS...")
+
             const proofImageUrl = await uploadImageToIPFS(proofImage)
             console.log("Image uploaded, URL:", proofImageUrl)
             handleUpload(proofImageUrl)
@@ -251,7 +251,7 @@ export const WithdrawPopup = ({
 
   const handleReasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target
-    console.log("Reason", value)
+
     setReason(value)
   }
   return (
@@ -417,7 +417,6 @@ export const RegisterIndividualPopup = ({
       !requiredTreatment ||
       !timeline
     ) {
-      console.error("Missing required fields")
       toast.error("Please fill in all fields")
       return
     }
@@ -477,6 +476,7 @@ export const RegisterIndividualPopup = ({
         }
       )
     } catch (error: any) {
+      toast.error(`Error during registration: ${error.message}`)
       console.error("Error during registration:", error)
 
       toast.update(pendingToastId, {
@@ -882,11 +882,6 @@ export const CampaignPopup = ({
 
         try {
           const contractAddress = getContractAddress(chainId)
-          console.log("chainId contractAddress   address", {
-            chainId,
-            contractAddress,
-            address,
-          })
 
           const donationContract = new ethers.Contract(
             contractAddress,
@@ -906,6 +901,7 @@ export const CampaignPopup = ({
           console.log("requiredFeeEther ", requiredFeeEther)
           setRequiredFee(requiredFeeEther.toString())
         } catch (error: any) {
+          toast.error(`Error: ${error.message}`)
           console.log(" handleFee error", error)
         }
       }
@@ -916,12 +912,6 @@ export const CampaignPopup = ({
 
   useEffect(() => {
     if (networkChain) {
-      console.log(
-        "Current chain:",
-        networkChain.name,
-        "Chain ID:",
-        networkChain.id
-      )
       setFormValues(prevValues => ({
         ...prevValues,
         destinationChainSelector: networkChain.id.toString(),
@@ -931,7 +921,7 @@ export const CampaignPopup = ({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target
-    console.log(`Input changed: ${name} = ${files ? files[0]?.name : value}`)
+
     setFormValues(prevValues => ({
       ...prevValues,
       [name]: files ? files[0] : value,
@@ -953,6 +943,7 @@ export const CampaignPopup = ({
         await switchChainAsync({ chainId: 696969 })
       }
     } catch (error) {
+      toast.error(`User rejected Tx`)
       console.log("User rejected Tx", error)
       return
     }
@@ -973,11 +964,10 @@ export const CampaignPopup = ({
         signer
       )
 
-      console.log("title", title)
       const tx = await galadrielContract.enhanceDescription(title)
 
       const receipt = await tx.wait(9)
-      console.log("receipt ", receipt)
+
       const event = receipt.events?.find(
         (event: any) => event.event === "RequestCreated"
       )
@@ -1109,9 +1099,9 @@ export const CampaignPopup = ({
       const signer = provider.getSigner()
 
       const chainId = networkChain?.id || 11155111
-      console.log("Using chain ID:", chainId)
+
       const contractAddress = getContractAddress(chainId)
-      console.log("Contract address:", contractAddress)
+
       const donationContract = new ethers.Contract(
         contractAddress,
         donationTrackerAbi,

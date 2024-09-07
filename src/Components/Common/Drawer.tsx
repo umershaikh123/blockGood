@@ -28,6 +28,7 @@ import { getChainConfig, getContractAddress } from "../../constants/chainConfig"
 import { useAccount } from "wagmi"
 import { Dialog } from "@mui/material"
 import WithdrawalsComponent from "./Withdrawal"
+import { toast } from "react-toastify"
 // import { useRouter } from "next/navigation"
 import { useRouter } from "next/router"
 const drawerTabsProps = [
@@ -129,11 +130,9 @@ export function DrawerContent({
           campaignData.creator
         )
         setIndividualData(individualDetails)
-
-        console.log("Organization Details:", organizationDetails)
-        console.log("Individual Details:", individualDetails)
       }
     } catch (error: any) {
+      toast.error(`Error fetching campaign details:${error.message}`)
       console.error("Error fetching campaign details:", error.message)
     }
   }
@@ -284,7 +283,6 @@ export function DrawerContent({
                 },
               }}
               onClick={() => {
-                console.log("chat button clicked")
                 router.push({
                   pathname: "/chat",
                   query: { creatorAddress },

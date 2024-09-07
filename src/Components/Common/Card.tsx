@@ -11,6 +11,7 @@ import ToggleButton from "@mui/material/ToggleButton"
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import { useAccount } from "wagmi"
 import ForumIcon from "@mui/icons-material/Forum"
+import { toast } from "react-toastify"
 
 export interface StatCardPropsType {
   raisedValue: BigNumber
@@ -51,6 +52,7 @@ export const StatCard = ({
         const data = await response.json()
         setEthToUsdRate(data.ethereum.usd)
       } catch (error) {
+        toast.error(`Rate Limit exceeded`)
         console.error("Failed to fetch ETH to USD rate:", error)
       }
     }
@@ -116,8 +118,6 @@ export const CampaignCard = ({
     raisedValue: raisedValue,
     goalValue: GoalValue,
   })
-
-  console.log("statcard values", { raisedValue, GoalValue })
 
   return (
     <div
@@ -209,7 +209,6 @@ export const AdminCampaignCard = ({
     raisedValue: raisedValue,
     goalValue: GoalValue,
   })
-  console.log("active", active)
 
   return (
     <div className="flex flex-col">
@@ -342,7 +341,6 @@ export const CampaignCardContainer = ({
   handlePopUp: any
   handleDrawer: any
 }) => {
-  console.log("campaignsList", campaignsList)
   const [selectedStatus, setSelectedStatus] = React.useState<string>("active")
 
   // Handler for toggle button group
