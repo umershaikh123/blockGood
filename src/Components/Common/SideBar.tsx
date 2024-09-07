@@ -17,6 +17,9 @@ import {
 import clsx from "clsx"
 import Link from "next/link"
 import SettingsIcon from "@mui/icons-material/Settings"
+import Router from "next/router"
+import { useRouter } from "next/navigation"
+
 const sidebarItemsTop = [
   {
     text: "Home",
@@ -61,6 +64,8 @@ const sidebarItemsBottom = [
 ]
 
 const CustomSidebar = () => {
+  // const router  =useRouter()
+
   const [expanded, setExpanded] = useState(false)
   const [activePage, setActivePage] = useState("/")
   return (

@@ -20,6 +20,8 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client"
 import { graphClient } from "../util/graphClient"
+import { XMTPProvider } from "@xmtp/react-sdk"
+
 const client = new QueryClient()
 
 export const myTheme = merge(lightTheme(), {
@@ -35,45 +37,47 @@ export const myTheme = merge(lightTheme(), {
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ReduxProvider store={store}>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={client}>
-          <RainbowKitProvider
-            theme={myTheme}
-            modalSize="compact"
-            showRecentTransactions={true}
-          >
-            <ApolloProvider client={graphClient}>
-              <ToastContainer
-                theme="light"
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                toastStyle={{
-                  backgroundColor: "var(--Bg)",
-                  color: "var(--primary)",
-                }}
-                toastClassName="custom-toast"
-              />
-              <ResponsiveAppBar
-                endComponent={<ConnectButton />}
-                copyright="© 2024 BlockGood, Inc."
-              />
+      <XMTPProvider>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={client}>
+            <RainbowKitProvider
+              theme={myTheme}
+              modalSize="compact"
+              showRecentTransactions={true}
+            >
+              <ApolloProvider client={graphClient}>
+                <ToastContainer
+                  theme="light"
+                  position="top-right"
+                  autoClose={5000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  toastStyle={{
+                    backgroundColor: "var(--Bg)",
+                    color: "var(--primary)",
+                  }}
+                  toastClassName="custom-toast"
+                />
+                <ResponsiveAppBar
+                  endComponent={<ConnectButton />}
+                  copyright="© 2024 BlockGood, Inc."
+                />
 
-              <CustomSidebar />
+                <CustomSidebar />
 
-              <div className="ml-28 mt-4  ">
-                <Component {...pageProps} />
-              </div>
-            </ApolloProvider>
-          </RainbowKitProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
+                <div className="ml-28 mt-4  ">
+                  <Component {...pageProps} />
+                </div>
+              </ApolloProvider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </XMTPProvider>
     </ReduxProvider>
   )
 }

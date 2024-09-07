@@ -26,6 +26,7 @@
     "@xmtp/react-sdk": "^8.0.1",
     "@xmtp/xmtp-js": "^12.1.0",
     "axios": "^1.7.7",
+    "ethereum-blockies-base64": "^1.0.2",
     "ethers": "^5.6.0",
     "graphql": "^16.9.0",
     "lodash.merge": "^4.6.2",

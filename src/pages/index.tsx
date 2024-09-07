@@ -66,10 +66,6 @@ const Home: NextPage = () => {
 
   const { data: walletClient } = useWalletClient()
 
-  const [campaignId, setCampaignId] = useState("")
-  const [amount, setAmount] = useState("")
-  const [attestations, setAttestations] = useState<Attestation[]>([])
-
   const [donationPopUpOpen, setDonationPopUpOpen] = React.useState(false)
 
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
@@ -178,9 +174,6 @@ const Home: NextPage = () => {
       const isIndividual = await donationContract.isRegisteredAsIndividual(
         creatorAddress
       )
-      // const isOrganization = await donationContract.isRegisteredAsOrganization(
-      //   creatorAddress
-      // )
 
       if (isIndividual) {
         setIsIndividual(true)
