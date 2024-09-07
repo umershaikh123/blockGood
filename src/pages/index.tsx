@@ -97,24 +97,26 @@ const Home: NextPage = () => {
           donationTrackerAbi,
           provider
         )
-
+        // const campaignDetails: Campaign =
+        //   await donationContract.getCampaignDetails(8)
+        // console.log("campaignDetails", campaignDetails)
+        // setCampaignsList([campaignDetails, campaignDetails, campaignDetails])
         const fetchedCampaigns: Campaign[] = []
 
         for (const campaign of data.DonationTracker_CampaignCreated) {
           const { campaignId } = campaign
 
-          const campaignDetails = await donationContract.getCampaignDetails(
-            campaignId
-          )
-
+          const campaignDetails: Campaign =
+            await donationContract.getCampaignDetails(campaignId)
+          console.log("campaignDetails", campaignDetails)
           fetchedCampaigns.push({
             campaignId,
             creator: campaignDetails.creator,
             title: campaignDetails.title,
             description: campaignDetails.description,
-            goal: campaignDetails.goal,
-            raised: campaignDetails.raised,
-            withdrawn: campaignDetails.withdrawn.toNumber(),
+            goal: BigNumber.from(campaignDetails.goal),
+            raised: BigNumber.from(campaignDetails.raised),
+            withdrawn: campaignDetails.withdrawn,
             coverImage: campaignDetails.coverImage,
             active: campaignDetails.active,
             withdrawalCount: campaignDetails.withdrawalCount,
@@ -128,6 +130,7 @@ const Home: NextPage = () => {
         console.log("fetchedCampaigns", fetchedCampaigns)
         setCampaignsList(fetchedCampaigns)
       } catch (error) {
+        toast.error(`Error fetching campaign details: ${error}`)
         console.error("Error fetching campaign details:", error)
       } finally {
         setLoading(false)

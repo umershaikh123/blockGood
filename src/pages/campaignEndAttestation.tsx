@@ -11,24 +11,43 @@ import { ThreeDots } from "react-loader-spinner"
 import { decodeAbiParameters } from "viem"
 import Image from "next/image"
 import signLogo from "/public/Icons/signIcon.webp"
+import { CampaignAttestationTable } from "../Components/Common/AttestationTable"
 interface Attestation {
   id: string
   attester: string
   attestTimestamp: string
   transactionHash?: string
   data: {
-    campaignId?: string
-    donorAddress?: string
-    Amount?: string
-    timeStamp?: string
+    campaignId: number
+    creatorAddress: `0x${string}` | undefined
+    campaignTitle: string
+    totalAmountRaised: number
+    goalAmount: number
+    startDate: number
+    endDate: number
+    numberOfDonors: number
+    campaignPurpose: string
+    beneficiary: `0x${string}` | undefined
+    campaignType: boolean
+    withdrawalAmount: number
+    refundFee: number
   }
 }
 
 interface AttestationData {
-  campaignId: string
-  donorAddress: string
-  Amount: bigint
-  timeStamp: string
+  campaignId: number
+  creatorAddress: `0x${string}` | undefined
+  campaignTitle: string
+  totalAmountRaised: number
+  goalAmount: number
+  startDate: number
+  endDate: number
+  numberOfDonors: number
+  campaignPurpose: string
+  beneficiary: `0x${string}` | undefined
+  campaignType: boolean
+  withdrawalAmount: number
+  refundFee: number
 }
 
 const AttestationPage: NextPage = () => {
@@ -61,18 +80,18 @@ const AttestationPage: NextPage = () => {
   const queryAttestations = async () => {
     setLoading(true)
     try {
-      const url = `https://testnet-rpc.sign.global/api/scan/attestations?schemaId=onchain_evm_11155111_0x6a&size=100`
+      const url = `https://testnet-rpc.sign.global/api/scan/attestations?schemaId=onchain_evm_11155111_0x83&size=100`
       const response = await fetch(url)
       const data = await response.json()
 
       if (data.success) {
         const formattedAttestations = data.data.rows.map((row: any) => {
           let parsedData = {}
-          try {
-            parsedData = JSON.parse(atob(row.data.slice(2)))
-          } catch (error) {
-            console.error("Error parsing attestation data:", error)
-          }
+          //   try {
+          //     parsedData = JSON.parse(atob(row.data.slice(2)))
+          //   } catch (error) {
+          //     console.error("Error parsing attestation data:", error)
+          //   }
 
           return {
             id: row.id,
@@ -83,7 +102,7 @@ const AttestationPage: NextPage = () => {
             data: parsedData,
           }
         })
-
+        console.log("formattedAttestations", formattedAttestations)
         setAttestations(formattedAttestations)
       } else {
         console.error("API request was not successful:", data.message)
@@ -103,7 +122,7 @@ const AttestationPage: NextPage = () => {
 
       const res = await indexService.queryAttestationList({
         id: "",
-        schemaId: "onchain_evm_11155111_0x6a",
+        schemaId: "onchain_evm_11155111_0x83",
         attester: "",
         page: 1,
         mode: "onchain",
@@ -111,10 +130,9 @@ const AttestationPage: NextPage = () => {
       })
 
       if (res?.rows) {
-        // Extract transaction hashes from each row
         const hashes = res.rows.map(row => row.transactionHash)
         console.log("hashes ", hashes)
-        // Update state with extracted hashes
+
         setTransactionHashes(hashes)
       }
 
@@ -135,7 +153,7 @@ const AttestationPage: NextPage = () => {
           className=" "
         />
         <h1 className="text-3xl font-semibold text-[var(--primary)]  flex items-center   ">
-          Donation Tracker
+          Campaign Tracker
         </h1>
       </div>
 
@@ -155,11 +173,13 @@ const AttestationPage: NextPage = () => {
             />
           </div>
         ) : (
-          <AttestationTable
-            tableData={attestations}
-            dataObject={dataObject}
-            txHashes={transactionHashes}
-          />
+          <>
+            <CampaignAttestationTable
+              tableData={attestations}
+              dataObject={dataObject}
+              txHashes={transactionHashes}
+            />
+          </>
         )}
       </div>
     </div>

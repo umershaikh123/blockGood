@@ -37,6 +37,8 @@ import {
 } from "../util/Queries"
 import { ThreeDots } from "react-loader-spinner"
 import { DrawerContent } from "../Components/Common/Drawer"
+import { EvmChains, SignProtocolClient, SpMode } from "@ethsign/sp-sdk"
+import { useWalletClient } from "wagmi"
 
 type Campaign = {
   campaignId: string
@@ -74,7 +76,7 @@ const campaign = () => {
   const { data: donationData } = useQuery(GET_DONATION_RECIEVED)
   const { error, data } = useQuery(GET_CAMPAIGN_IDS)
   const { data: proofData } = useQuery(GET_PROOF_UPLOADED)
-
+  const { data: walletClient } = useWalletClient()
   const { chain: networkChain, address, isConnected } = useAccount()
 
   const [campaignsList, setCampaignsList] = useState<Campaign[]>([])
@@ -157,9 +159,9 @@ const campaign = () => {
             creator: campaignDetails.creator,
             title: campaignDetails.title,
             description: campaignDetails.description,
-            goal: campaignDetails.goal,
-            raised: campaignDetails.raised,
-            withdrawn: campaignDetails.withdrawn.toNumber(),
+            goal: BigNumber.from(campaignDetails.goal),
+            raised: BigNumber.from(campaignDetails.raised),
+            withdrawn: campaignDetails.withdrawn,
             coverImage: campaignDetails.coverImage,
             active: campaignDetails.active,
             withdrawalCount: campaignDetails.withdrawalCount,
@@ -173,6 +175,7 @@ const campaign = () => {
         console.log("fetchedCampaigns", fetchedCampaigns)
         setCampaignsList(fetchedCampaigns)
       } catch (error) {
+        toast.error(`Error fetching campaign details: ${error}`)
         console.error("Error fetching campaign details:", error)
       } finally {
         setLoading(false)
@@ -343,12 +346,17 @@ const campaign = () => {
         donationTrackerAbi,
         provider
       )
+      const client = new SignProtocolClient(SpMode.OnChain, {
+        chain: EvmChains.sepolia,
+        walletClient: walletClient!,
+      })
 
       const ContractSigner = donationContract.connect(signer)
 
       const tx = await ContractSigner.endCampaign(campaign.campaignId)
 
       const receipt = await tx.wait()
+
       toast.update(pendingToastId, {
         render: "Tx Successful!",
         type: "success",
@@ -375,6 +383,34 @@ const campaign = () => {
           autoClose: 7000,
         }
       )
+
+      toast.info("Creating Attestation ...")
+      const campaignDonors: string[] = await ContractSigner.getCampaignDonors(
+        campaign.campaignId
+      )
+
+      const attestationResult = await client.createAttestation({
+        schemaId: "0x83",
+        data: {
+          campaignId: currentCampaignID,
+          creatorAddress: campaign.creator,
+          campaignTitle: campaign.title,
+          totalAmountRaised: campaign.raised,
+          goalAmount: campaign.goal,
+          startDate: 0,
+          endDate: 0,
+          numberOfDonors: campaignDonors.length || 0,
+          campaignPurpose: campaign.description,
+          beneficiary: campaign.creator,
+          campaignType: true,
+          withdrawalAmount: campaign.withdrawn,
+          refundFee: campaign.creationFee,
+        },
+        indexingValue: address?.toLowerCase() || "0x",
+      })
+
+      toast.info("Attestation Created")
+      console.log("Attestation created:", attestationResult)
     } catch (error: any) {
       console.error("Tx failed", error)
       toast.update(pendingToastId, {
@@ -573,7 +609,7 @@ const campaign = () => {
           </>
         ) : (
           <div className="h-[60vh] flex items-center justify-center">
-            <h1 className="text-3xl text-[var(--secondary)] text-semibold  px-4 py-2 rounded-xl">
+            <h1 className="text-3xl text-[var(--secondary)]   font-semibold  px-4 py-2 rounded-xl">
               Please Connect wallet
             </h1>
           </div>

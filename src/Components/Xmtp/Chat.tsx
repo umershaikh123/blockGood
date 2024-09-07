@@ -31,6 +31,7 @@ interface CreateClientProps {
 }
 
 export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
+  console.log("signer", signer)
   const { client, initialize } = useClient()
   const [messages, setMessages] = useState<DecodedMessage[]>([])
   const [newMessage, setNewMessage] = useState("")
@@ -92,12 +93,7 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
     }
 
     if (client) {
-      try {
-        fetchMessages()
-      } catch (error: any) {
-        toast.error("Recipient is not on the XMTP network")
-        console.log("could not fetch messages :", error)
-      }
+      fetchMessages()
     }
   }, [client, peerAddress])
 

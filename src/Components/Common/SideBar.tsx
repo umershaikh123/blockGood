@@ -19,6 +19,7 @@ import Link from "next/link"
 import SettingsIcon from "@mui/icons-material/Settings"
 import Router from "next/router"
 import { useRouter } from "next/router"
+import DoneIcon from "@mui/icons-material/Done"
 
 const sidebarItemsTop = [
   {
@@ -37,9 +38,15 @@ const sidebarItemsTop = [
     link: "/chat",
   },
   {
-    text: "Attestation",
+    text: "Donations Attestation",
     icon: <CreateIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
     link: "/attestation",
+  },
+
+  {
+    text: "Campaign Attestation",
+    icon: <DoneIcon sx={{ color: "var(--primary)" }} fontSize="large" />,
+    link: "/campaignEndAttestation",
   },
 ]
 
@@ -95,7 +102,7 @@ const CustomSidebar = () => {
                 )}
                 <h1
                   className={clsx(
-                    "text-[var(--primary)] font-semibold",
+                    "text-[var(--primary)] font-semibold min-w-[10rem]",
                     expanded ? "opacity-100" : "opacity-0",
                     "transition-all duration-300 ease-in-out"
                   )}
