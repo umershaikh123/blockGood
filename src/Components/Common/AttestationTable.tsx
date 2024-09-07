@@ -70,65 +70,13 @@ export const CampaignAttestationTable: React.FC<AttestationTableProps> = ({
     dataObject,
     txHashes,
   })
-  //   const combinedData = tableData.map((item, index) => ({
-  //     ...item,
-  //     transactionHash: txHashes[index],
-  //   }))
 
-  //   const mergedData = combinedData.map(attestation => {
-  //     const matchedData = dataObject.find(
-  //       data =>
-  //         data.creatorAddress?.toLowerCase() ===
-  //         attestation.attester.toLowerCase()
-  //     )
-
-  //     const formattedAttestTimestamp = new Date(
-  //       attestation.attestTimestamp
-  //     ).toLocaleString("en-US", {
-  //       year: "numeric",
-  //       month: "short",
-  //       day: "numeric",
-  //       hour: "2-digit",
-  //       minute: "2-digit",
-  //       hour12: true,
-  //     })
-
-  //     return {
-  //       ...attestation,
-  //       transactionHash: attestation.transactionHash,
-  //       attestTimestamp: formattedAttestTimestamp,
-  //       data: {
-  //         ...attestation.data,
-  //         // goalAmount: ethers.utils.formatEther(
-  //         //   BigNumber.from(attestation.data.goalAmount)
-  //         // ),
-  //         goalAmount: attestation.data.goalAmount,
-
-  //         totalAmountRaised: attestation.data.totalAmountRaised,
-
-  //         withdrawalAmount: attestation.data.withdrawalAmount,
-
-  //         refundFee: attestation.data.refundFee,
-
-  //         // totalAmountRaised: ethers.utils.formatEther(
-  //         //   attestation.data.totalAmountRaised.toString()
-  //         // ),
-  //         // withdrawalAmount: ethers.utils.formatEther(
-  //         //   attestation.data.withdrawalAmount.toString()
-  //         // ),
-  //         // refundFee: ethers.utils.formatEther(
-  //         //   attestation.data.refundFee.toString()
-  //         // ),
-  //       },
-  //     }
-  //   })
   const combinedData = tableData.map((item, index) => ({
     ...item,
     transactionHash: txHashes[index],
   }))
 
   const mergedData = combinedData.map(attestation => {
-    // Find matching data object by comparing attester and creatorAddress
     const matchedData = dataObject.find(
       data =>
         data.creatorAddress?.toLowerCase() ===
@@ -146,18 +94,17 @@ export const CampaignAttestationTable: React.FC<AttestationTableProps> = ({
       hour12: true,
     })
 
-    // Handle case when matchedData is found
     if (matchedData) {
       return {
         ...attestation,
         transactionHash: attestation.transactionHash,
         attestTimestamp: formattedAttestTimestamp,
         data: {
-          campaignId: matchedData.campaignId.toString(), // Convert BigInt to string
+          campaignId: matchedData.campaignId.toString(),
           campaignTitle: matchedData.campaignTitle,
           goalAmount: ethers.utils.formatEther(
             matchedData.goalAmount.toString()
-          ), // Format BigInt to ETH string
+          ),
           totalAmountRaised: ethers.utils.formatEther(
             matchedData.totalAmountRaised.toString()
           ),
@@ -171,12 +118,11 @@ export const CampaignAttestationTable: React.FC<AttestationTableProps> = ({
       }
     }
 
-    // Handle case when no matching data object is found
     return {
       ...attestation,
       transactionHash: attestation.transactionHash,
       attestTimestamp: formattedAttestTimestamp,
-      data: {}, // Empty or default data if not found
+      data: {},
     }
   })
   const displayedData = mergedData.slice((currentPage - 1) * 8, currentPage * 8)
@@ -194,10 +140,12 @@ export const CampaignAttestationTable: React.FC<AttestationTableProps> = ({
               <th className="px-2 py-4 text-center">Campaign ID</th>
               <th className="px-6 w-fit py-4 text-left">Attester/Creator</th>
               <th className="px-6 py-4 text-center">Campaign Title</th>
-              <th className="px-6 py-4 text-center">Goal Amount</th>
-              <th className="px-6 py-4 text-center">Total Amount Raised</th>
+              <th className="px-6 py-4 text-center">Goal Amount (ETH)</th>
+              <th className="px-6 py-4 text-center">
+                Total Amount Raised (ETH)
+              </th>
               <th className="px-6 py-4 text-center">Number of Donors</th>
-              <th className="px-6 py-4 text-center">Withdrawal Amount</th>
+              <th className="px-6 py-4 text-center">Withdrawal Amount (ETH)</th>
               <th className="px-6 py-4 text-center">Refund Fee</th>
               <th className="px-6 py-4 text-center">Timestamp</th>
               <th className="px-6 py-4 text-center">Tx Hash</th>
