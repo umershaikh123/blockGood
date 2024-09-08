@@ -112,6 +112,7 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
             setPeerAddress(conversations.conversation?.peerAddress)
 
             setMessages([...(await conversations.conversation.messages())])
+            setNewMessage("")
           }
         } catch (error: any) {
           toast.error("Could not fetch messages")
@@ -147,8 +148,8 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
 
   return (
     <div className="p-4 relative   ">
-      {/* <CreateClient signer={signer} /> */}
-      {address && <CreateClientWithKeys signer={signer} address={address} />}
+      <CreateClient signer={signer} />
+      {/* {address && <CreateClientWithKeys signer={signer} address={address} />} */}
       <div className="flex  ">
         <div className="border border-[var(--secondary)] flex flex-col  max-w-[22rem] h-[70vh] overflow-auto rounded-xl w-full">
           {isLoadingConversations && (

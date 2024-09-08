@@ -2,18 +2,21 @@ import React from "react"
 import { Chat } from "../Components/Xmtp/Chat"
 import { useAccount } from "wagmi"
 import { ethers, Signer } from "ethers"
+import { useRouter } from "next/router"
 
 const chat = () => {
+  const router = useRouter()
+
   const { address, isConnected, chainId, isDisconnected } = useAccount()
   const [signer, setSigner] = React.useState<Signer>()
 
   React.useEffect(() => {
-    if (isDisconnected) {
+    if (isConnected) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
       setSigner(signer)
     }
-  }, [isDisconnected])
+  }, [isConnected, isDisconnected, router.pathname])
 
   return (
     <div>

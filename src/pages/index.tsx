@@ -130,7 +130,7 @@ const Home: NextPage = () => {
         console.log("fetchedCampaigns", fetchedCampaigns)
         setCampaignsList(fetchedCampaigns)
       } catch (error) {
-        toast.error(`Error fetching campaign details: ${error}`)
+        // toast.error(`Error fetching campaign details: ${error}`)
         console.error("Error fetching campaign details:", error)
       } finally {
         setLoading(false)
@@ -232,7 +232,7 @@ const Home: NextPage = () => {
 
       const receipt = await tx.wait()
       toast.update(pendingToastId, {
-        render: "Registration Successful!",
+        render: "Donation Successful!",
         type: "success",
         isLoading: false,
         autoClose: 5000,
@@ -254,7 +254,7 @@ const Home: NextPage = () => {
           </a>
         </div>,
         {
-          autoClose: 7000,
+          autoClose: 5000,
         }
       )
 
@@ -269,7 +269,7 @@ const Home: NextPage = () => {
         },
         indexingValue: address?.toLowerCase() || "0x",
       })
-
+      toast.info("Attestation created ")
       console.log("Attestation created:", attestationResult)
 
       setDonationPopUpOpen(false)
@@ -399,7 +399,10 @@ const Home: NextPage = () => {
           theme="custom"
           content={`Create new Campaign`}
         >
-          <button className=" rounded-full p-4 bg-[var(--primary)]">
+          <button
+            className=" rounded-full p-4 bg-[var(--primary)]"
+            onClick={handleCampaignOpen}
+          >
             <AddIcon
               sx={{
                 color: "white",

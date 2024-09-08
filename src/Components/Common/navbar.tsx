@@ -169,7 +169,7 @@ function ResponsiveAppBar({ endComponent, copyright }: ResponsiveAppBarProps) {
           >
             {/* <div className="flex space-x-6 text-base"></div> */}
             {/* add searchBar */}
-            <Search>
+            {/* <Search>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
@@ -177,7 +177,7 @@ function ResponsiveAppBar({ endComponent, copyright }: ResponsiveAppBarProps) {
                 placeholder="Search Campaigns ...."
                 inputProps={{ "aria-label": "search" }}
               />
-            </Search>
+            </Search> */}
           </Box>
 
           <Box>{endComponent}</Box>

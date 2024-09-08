@@ -52,7 +52,7 @@ export const StatCard = ({
         const data = await response.json()
         setEthToUsdRate(data.ethereum.usd)
       } catch (error) {
-        toast.error(`Rate Limit exceeded`)
+        // toast.error(`Rate Limit exceeded`)
         console.error("Failed to fetch ETH to USD rate:", error)
       }
     }
