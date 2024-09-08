@@ -111,10 +111,9 @@ const AttestationPage: NextPage = () => {
       })
 
       if (res?.rows) {
-        // Extract transaction hashes from each row
         const hashes = res.rows.map(row => row.transactionHash)
         console.log("hashes ", hashes)
-        // Update state with extracted hashes
+
         setTransactionHashes(hashes)
       }
 

@@ -931,6 +931,10 @@ export const CampaignPopup = ({
   const handleGaladriel = async () => {
     const { title } = formValues
 
+    if (!isConnected) {
+      toast.error("Please Connect wallet")
+      return
+    }
     if (!title) {
       console.error("Missing title")
       toast.error("Please fill title")

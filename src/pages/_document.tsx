@@ -1,8 +1,9 @@
 import { Html, Head, Main, NextScript } from "next/document"
 
-export const siteTitle = "CryptoFund"
+export const siteTitle = "BlockGood"
 const siteDomain = "https://crypto-fund-six.vercel.app/"
-const siteDescription = "A crowdFunding transparent platform"
+const siteDescription =
+  "A transparent Fund raising platforms for Individuals and Organization"
 
 export default function Document() {
   return (

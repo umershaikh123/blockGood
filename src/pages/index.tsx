@@ -73,7 +73,7 @@ const Home: NextPage = () => {
   )
   const [campaignPopUpOpen, setCampaignPopUpOpen] = React.useState(false)
   const [openDrawer, setOpenDrawer] = React.useState(false)
-  const { chain: networkChain, address } = useAccount()
+  const { chain: networkChain, address, isConnected } = useAccount()
 
   const { error, data, refetch } = useQuery(GET_CAMPAIGN_IDS)
   const { data: donationData } = useQuery(GET_DONATION_RECIEVED)
@@ -97,10 +97,7 @@ const Home: NextPage = () => {
           donationTrackerAbi,
           provider
         )
-        // const campaignDetails: Campaign =
-        //   await donationContract.getCampaignDetails(8)
-        // console.log("campaignDetails", campaignDetails)
-        // setCampaignsList([campaignDetails, campaignDetails, campaignDetails])
+
         const fetchedCampaigns: Campaign[] = []
 
         for (const campaign of data.DonationTracker_CampaignCreated) {
@@ -130,7 +127,6 @@ const Home: NextPage = () => {
         console.log("fetchedCampaigns", fetchedCampaigns)
         setCampaignsList(fetchedCampaigns)
       } catch (error) {
-        // toast.error(`Error fetching campaign details: ${error}`)
         console.error("Error fetching campaign details:", error)
       } finally {
         setLoading(false)
@@ -187,8 +183,6 @@ const Home: NextPage = () => {
   }
 
   const handleDrawerOpen = (campaign: Campaign) => {
-    // fetch is individual or campaign
-
     fetchIsIndividual(campaign.creator)
     setSelectedCampaign(campaign)
     setOpenDrawer(true)
@@ -202,6 +196,10 @@ const Home: NextPage = () => {
   const handleDonate = async (amount: number) => {
     console.log("campaign ID", currentCampaignID)
     console.log("donation amount", amount)
+    if (!isConnected) {
+      toast.error("Please Connect wallet")
+      return
+    }
     if (!amount || amount <= 0) {
       toast.error("Please enter a valid donation amount.")
       return
@@ -339,7 +337,7 @@ const Home: NextPage = () => {
       </Drawer>
 
       <div className="mt-4">
-        {loading ? ( // Display loading indicator
+        {loading ? (
           <div className="h-[70vh] w-[90vw] flex justify-center items-center">
             <ThreeDots
               visible={true}

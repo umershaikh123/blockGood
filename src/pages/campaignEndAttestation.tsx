@@ -87,11 +87,6 @@ const AttestationPage: NextPage = () => {
       if (data.success) {
         const formattedAttestations = data.data.rows.map((row: any) => {
           let parsedData = {}
-          //   try {
-          //     parsedData = JSON.parse(atob(row.data.slice(2)))
-          //   } catch (error) {
-          //     console.error("Error parsing attestation data:", error)
-          //   }
 
           return {
             id: row.id,

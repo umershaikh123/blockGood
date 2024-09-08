@@ -131,7 +131,7 @@ const campaign = () => {
 
   const fetchCampaignDetails = useMemo(
     () => async () => {
-      if (!data) return // Ensure that the data is available
+      if (!data) return
       setLoading(true)
       try {
         const chainConfig = getChainConfig(networkChain?.id || 11155111)
@@ -190,8 +190,12 @@ const campaign = () => {
     }
   }, [data, fetchCampaignDetails])
 
-  // withdraw(uint256 campaignId, uint256 amount, string memory reason)
   const handleWithdraw = async (amount: number, reason: string) => {
+    if (!isConnected) {
+      toast.error("Please Connect wallet")
+      return
+    }
+
     const pendingToastId = toast.loading("Transaction Pending...")
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -210,7 +214,7 @@ const campaign = () => {
       toast.info("withdrawing ...")
       const tx = await ContractSigner.withdraw(
         currentCampaignID,
-        // BigNumber.from(reason),
+
         ethers.utils.parseEther(amount.toString()),
         reason
       )
@@ -264,6 +268,11 @@ const campaign = () => {
   }
 
   const handleUploadPOS = async (proofURL: string) => {
+    if (!isConnected) {
+      toast.error("Please Connect wallet")
+      return
+    }
+
     if (!proofData) {
       return
     }
@@ -334,7 +343,13 @@ const campaign = () => {
   }
 
   const handleEndCampaign = async (campaign: Campaign) => {
+    if (!isConnected) {
+      toast.error("Please Connect wallet")
+      return
+    }
+
     const pendingToastId = toast.loading("Transaction Pending...")
+
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
@@ -421,7 +436,6 @@ const campaign = () => {
         isLoading: false,
       })
     } finally {
-      // window.location.reload()
     }
   }
 

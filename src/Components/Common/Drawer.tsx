@@ -79,8 +79,6 @@ export function DrawerContent({
   donationData,
   campaignID,
 }: DrawerContentProps) {
-  // campaignData.creator
-
   const { chain: networkChain, address } = useAccount()
   const [organizationData, setOrganizationData] = useState<any>(null)
   const [loading, setLoading] = useState<boolean>(true)

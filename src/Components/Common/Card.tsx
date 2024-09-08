@@ -203,8 +203,6 @@ export const AdminCampaignCard = ({
   handleDrawer,
   active,
 }: AdminCampaignCardType) => {
-  // const leftValue = raisedValue - GoalValue
-
   const progress = calculateCampaignProgress({
     raisedValue: raisedValue,
     goalValue: GoalValue,
