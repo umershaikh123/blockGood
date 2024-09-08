@@ -399,7 +399,10 @@ const Home: NextPage = () => {
           theme="custom"
           content={`Create new Campaign`}
         >
-          <button className=" rounded-full p-4 bg-[var(--primary)]">
+          <button
+            className=" rounded-full p-4 bg-[var(--primary)]"
+            onClick={handleCampaignOpen}
+          >
             <AddIcon
               sx={{
                 color: "white",
