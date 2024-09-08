@@ -901,7 +901,7 @@ export const CampaignPopup = ({
           console.log("requiredFeeEther ", requiredFeeEther)
           setRequiredFee(requiredFeeEther.toString())
         } catch (error: any) {
-          toast.error(`Error: ${error.message}`)
+          // toast.error(`Error: ${error.message}`)
           console.log(" handleFee error", error)
         }
       }
@@ -1175,7 +1175,7 @@ export const CampaignPopup = ({
           autoClose: 7000,
         }
       )
-      refetch()
+      // refetch()
       handleClose()
     } catch (error: any) {
       toast.update(pendingToastId, {

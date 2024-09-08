@@ -13,7 +13,7 @@ const chat = () => {
       const signer = provider.getSigner()
       setSigner(signer)
     }
-  }, [isDisconnected])
+  }, [isConnected, isDisconnected])
 
   return (
     <div>

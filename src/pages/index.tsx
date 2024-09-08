@@ -232,7 +232,7 @@ const Home: NextPage = () => {
 
       const receipt = await tx.wait()
       toast.update(pendingToastId, {
-        render: "Registration Successful!",
+        render: "Donation Successful!",
         type: "success",
         isLoading: false,
         autoClose: 5000,
@@ -254,7 +254,7 @@ const Home: NextPage = () => {
           </a>
         </div>,
         {
-          autoClose: 7000,
+          autoClose: 5000,
         }
       )
 
@@ -269,7 +269,7 @@ const Home: NextPage = () => {
         },
         indexingValue: address?.toLowerCase() || "0x",
       })
-
+      toast.info("Attestation created ")
       console.log("Attestation created:", attestationResult)
 
       setDonationPopUpOpen(false)

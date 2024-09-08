@@ -132,7 +132,7 @@ export function DrawerContent({
         setIndividualData(individualDetails)
       }
     } catch (error: any) {
-      toast.error(`Error fetching campaign details:${error.message}`)
+      // toast.error(`Error fetching campaign details:${error.message}`)
       console.error("Error fetching campaign details:", error.message)
     }
   }
