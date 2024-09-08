@@ -130,7 +130,7 @@ const Home: NextPage = () => {
         console.log("fetchedCampaigns", fetchedCampaigns)
         setCampaignsList(fetchedCampaigns)
       } catch (error) {
-        toast.error(`Error fetching campaign details: ${error}`)
+        // toast.error(`Error fetching campaign details: ${error}`)
         console.error("Error fetching campaign details:", error)
       } finally {
         setLoading(false)

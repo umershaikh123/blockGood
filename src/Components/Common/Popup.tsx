@@ -476,7 +476,7 @@ export const RegisterIndividualPopup = ({
         }
       )
     } catch (error: any) {
-      toast.error(`Error during registration: ${error.message}`)
+      // toast.error(`Error during registration: ${error.message}`)
       console.error("Error during registration:", error)
 
       toast.update(pendingToastId, {
