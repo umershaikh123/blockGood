@@ -112,6 +112,7 @@ export const Chat: React.FC<CreateClientProps> = ({ signer }) => {
             setPeerAddress(conversations.conversation?.peerAddress)
 
             setMessages([...(await conversations.conversation.messages())])
+            setNewMessage("")
           }
         } catch (error: any) {
           toast.error("Could not fetch messages")

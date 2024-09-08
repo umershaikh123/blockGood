@@ -83,6 +83,7 @@ export function DrawerContent({
 
   const { chain: networkChain, address } = useAccount()
   const [organizationData, setOrganizationData] = useState<any>(null)
+  const [loading, setLoading] = useState<boolean>(true)
   const [individualData, setIndividualData] = useState<any>(null)
   const [open, setOpen] = useState(false)
   const [currentImage, setCurrentImage] = useState<string | null>(null)
@@ -120,6 +121,7 @@ export function DrawerContent({
     try {
       if (campaignData) {
         // Fetch organization data
+        setLoading(true)
         const organizationDetails = await donationContract.organizations(
           campaignData.creator
         )
@@ -134,6 +136,8 @@ export function DrawerContent({
     } catch (error: any) {
       // toast.error(`Error fetching campaign details:${error.message}`)
       console.error("Error fetching campaign details:", error.message)
+    } finally {
+      setLoading(false)
     }
   }
   const handleImageClick = (imageSrc: string) => {
@@ -185,16 +189,20 @@ export function DrawerContent({
         </div>
         {isIndividual === false && organizationData && (
           <>
-            <img
-              src={organizationData.registrationProof}
-              width={100}
-              height={100}
-              alt="Organization proof"
-              className=" rounded-xl"
-              onClick={() =>
-                handleImageClick(organizationData.registrationProof)
-              }
-            />
+            {organizationData.registrationProof ? (
+              <img
+                src={organizationData.registrationProof}
+                width={100}
+                height={100}
+                alt="Organization proof"
+                className=" rounded-xl"
+                onClick={() =>
+                  handleImageClick(organizationData.registrationProof)
+                }
+              />
+            ) : (
+              <h1 className="text-[var(--primary)]">No Proof provided</h1>
+            )}
           </>
         )}
 
@@ -308,6 +316,7 @@ export function DrawerContent({
             component1={
               <>
                 <Details
+                  loading={loading}
                   description={Description}
                   individualData={individualData}
                   OrganizationData={organizationData}
